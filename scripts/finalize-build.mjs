@@ -19,5 +19,21 @@ if (!fs.existsSync(backup)) {
     }
 }
 
-fs.copyFileSync(src, dest);
-console.log('index.html updated (production modular build)');
+if (!fs.existsSync(src)) {
+    console.error('finalize-build: missing index.production.html — run npm run build:html');
+    process.exit(1);
+}
+
+const prod = fs.readFileSync(src, 'utf8');
+if (!prod.includes('<main class="frame">')) {
+    console.error('finalize-build: index.production.html missing intake markup — refusing to overwrite index.html');
+    process.exit(1);
+}
+
+const current = fs.existsSync(dest) ? fs.readFileSync(dest, 'utf8') : '';
+if (current.includes('<main class="frame">')) {
+    console.log('finalize-build: keeping existing modular index.html (safe)');
+} else {
+    fs.copyFileSync(src, dest);
+    console.log('index.html updated from index.production.html');
+}

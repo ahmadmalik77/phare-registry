@@ -3,14 +3,43 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const lines = fs.readFileSync(path.join(root, 'index.html'), 'utf8').split(/\r?\n/);
 
-const head = lines.slice(0, 17).join('\n');
-const body = lines.slice(990, 1251).join('\n');
+function extractBodyFromModular(html) {
+    const match = html.match(/<body>\s*([\s\S]*?)\s*<script src="assets\/config\.js"/);
+    return match ? match[1].trim() : '';
+}
+
+function extractBodyFromMonolith(lines) {
+    return lines.slice(990, 1251).join('\n');
+}
+
+const modularPath = path.join(root, 'index.html');
+const monolithPath = path.join(root, 'archive', 'index.monolith.html');
+
+let modular = fs.existsSync(modularPath) ? fs.readFileSync(modularPath, 'utf8') : '';
+let body = modular.includes('<main class="frame">')
+    ? extractBodyFromModular(modular)
+    : '';
+
+if (!body && fs.existsSync(monolithPath)) {
+    const lines = fs.readFileSync(monolithPath, 'utf8').split(/\r?\n/);
+    body = extractBodyFromMonolith(lines);
+}
+
+if (!body.includes('<main class="frame">')) {
+    console.error('build-html: could not extract intake markup from index.html or archive/index.monolith.html');
+    process.exit(1);
+}
+
+const head = modular.includes('<!DOCTYPE html>')
+    ? modular.split('</head>')[0].replace(/<link rel="stylesheet" href="assets\/styles\.css[^"]*">/, '').trim()
+    : fs.readFileSync(monolithPath, 'utf8').split(/\r?\n/).slice(0, 17).join('\n');
 
 const html = `${head}
     <link rel="stylesheet" href="assets/styles.css">
 </head>
+<body>
+
 ${body}
 
     <script src="assets/config.js"></script>

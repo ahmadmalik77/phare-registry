@@ -42,11 +42,13 @@ Generate registry keypair (browser DevTools on any HTTPS page):
 
 ```js
 const kp = await crypto.subtle.generateKey(
-  { name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveKey']
+  { name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveBits']
 );
 console.log('PRIVATE:', await crypto.subtle.exportKey('jwk', kp.privateKey));
 console.log('PUBLIC:', await crypto.subtle.exportKey('jwk', kp.publicKey));
 ```
+
+> Browser intake uses `deriveBits` for ECDH — do **not** use `deriveKey` on imported public keys.
 
 Set secrets (all required except INVITE_TOKEN):
 
@@ -54,7 +56,7 @@ Set secrets (all required except INVITE_TOKEN):
 wrangler secret put REGISTRY_PRIVATE_JWK
 wrangler secret put ALLOWED_ORIGINS      # e.g. https://youruser.github.io,https://intake.phare.com
 wrangler secret put IP_HASH_SALT         # random 32+ char string
-wrangler secret put INVITE_TOKEN         # optional — matches invite link / config
+wrangler secret put INVITE_TOKEN         # required for invitation-only — share ?invite=TOKEN links (never put token in config.js)
 ```
 
 Deploy:

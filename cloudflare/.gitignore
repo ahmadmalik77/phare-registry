@@ -1,0 +1,7 @@
+node_modules/
+.wrangler/
+.dev.vars
+.cloudflare-token
+.registry-private.jwk
+.registry-public.jwk
+package-lock.json

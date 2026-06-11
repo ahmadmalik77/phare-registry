@@ -53,3 +53,15 @@ test('wrong private key fails decrypt', async () => {
     const encrypted = await encryptForRegistry({ designation: 'x' }, pub1);
     await assert.rejects(() => decryptFromRegistry(priv2, encrypted));
 });
+
+test('validateEncryptedShape rejects bad payloads', () => {
+    assert.equal(validateEncryptedShape(null), 'Invalid payload');
+    assert.equal(validateEncryptedShape({ v: 'wrong' }), 'Unsupported payload version');
+    assert.equal(validateEncryptedShape({ v: PROTOCOL_VERSION }), 'Missing ephemeral public key');
+    assert.equal(validateEncryptedShape({ v: PROTOCOL_VERSION, ephemeralPublicKey: {kty:'EC'}, iv: 'a', ciphertext: 'b'.repeat(100000) }), 'Payload too large');
+});
+
+test('large but valid payload shape passes', () => {
+    const ok = { v: PROTOCOL_VERSION, ephemeralPublicKey: {kty:'EC'}, iv: 'iv', ciphertext: 'c'.repeat(1000) };
+    assert.equal(validateEncryptedShape(ok), null);
+});

@@ -42,7 +42,7 @@
 
 
     /* === 10/10 internal version (exposed for operators / debugging, no UI impact) === */
-    const PHARE_VERSION = '2026.06-production.5';
+    const PHARE_VERSION = '2026.06-production.10';
 
     /*
      * PRODUCTION HARDENING (GitHub Pages host + Cloudflare Worker API):

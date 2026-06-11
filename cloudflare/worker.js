@@ -15,7 +15,7 @@ const RATE_LIMIT_MAX = 5;
 const RATE_LIMIT_WINDOW_SEC = 3600;
 const INTAKE_TTL_SEC = 14400;
 const MAX_BODY_BYTES = 98304; // 96 KiB
-const PROTOCOL_VERSION = 'phare-aes-gcm-ecdh-v2';
+import { validateIntakePayload, PROTOCOL_VERSION } from '../lib/intake-validate.mjs';
 
 export default {
     async fetch(request, env) {
@@ -97,7 +97,7 @@ async function handleIntake(request, env, cors) {
         return json({ error: 'Invalid submission' }, 400, securityHeaders(cors));
     }
 
-    const err = validatePayload(body);
+    const err = validateIntakePayload(body);
     if (err) return json({ error: err }, 400, securityHeaders(cors));
 
     const id = crypto.randomUUID();
@@ -121,21 +121,6 @@ async function handleIntake(request, env, cors) {
     return json({ ok: true, id, receivedAt: record.receivedAt }, 202, securityHeaders(cors));
 }
 
-function validatePayload(body) {
-    if (!body || typeof body !== 'object') return 'Invalid payload';
-    if (body.v !== PROTOCOL_VERSION) return 'Unsupported payload version';
-    if (!body.ephemeralPublicKey?.kty) return 'Missing ephemeral public key';
-    if (!body.iv || typeof body.iv !== 'string') return 'Missing IV';
-    if (!body.ciphertext || typeof body.ciphertext !== 'string') return 'Missing ciphertext';
-    if (body.ciphertext.length > 65536) return 'Payload too large';
-    if (!isValidBase64(body.iv) || !isValidBase64(body.ciphertext)) return 'Invalid encoding';
-    return null;
-}
-
-function isValidBase64(s) {
-    return typeof s === 'string' && s.length > 0 && s.length % 4 === 0 && /^[A-Za-z0-9+/]+=*$/.test(s);
-}
-
 async function isRateLimited(ipHash, env) {
     if (!env.PHARE_KV) return false;
     const key = `rate:${ipHash}`;
@@ -154,7 +139,10 @@ async function isRateLimited(ipHash, env) {
 }
 
 async function hashIp(ip, env) {
-    const salt = env.IP_HASH_SALT || 'phare-default-salt-change-me';
+    const salt = env.IP_HASH_SALT;
+    if (!salt || salt === 'phare-default-salt-change-me') {
+        throw new Error('IP_HASH_SALT secret not configured');
+    }
     const digest = await crypto.subtle.digest(
         'SHA-256',
         new TextEncoder().encode(`${salt}:${ip}`)

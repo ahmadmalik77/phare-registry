@@ -1,6 +1,6 @@
 {
   "name": "phare-registry",
-  "version": "2026.06-production",
+  "version": "2026.06-production.10",
   "private": true,
   "type": "module",
   "description": "Phare — The Lighthouse. Private UHNWI executive intake registry.",
@@ -8,7 +8,7 @@
     "extract": "node scripts/extract-assets.mjs",
     "build:app": "node scripts/build-app.mjs",
     "build:html": "node scripts/build-html.mjs",
-    "build": "npm run extract && npm run build:app && npm run build:html && node scripts/finalize-build.mjs",
+    "build": "npm run build:app && npm run build:html && node scripts/finalize-build.mjs",
     "test": "node --test tests/**/*.test.mjs",
     "validate": "node scripts/validate.mjs",
     "setup": "node scripts/setup-config.mjs",
