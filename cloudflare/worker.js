@@ -15,7 +15,8 @@ const RATE_LIMIT_MAX = 5;
 const RATE_LIMIT_WINDOW_SEC = 3600;
 const INTAKE_TTL_SEC = 14400;
 const MAX_BODY_BYTES = 98304; // 96 KiB
-import { validateIntakePayload, PROTOCOL_VERSION } from '../lib/intake-validate.mjs';
+import { validateIntakePayload, isHoneypotTriggered, PROTOCOL_VERSION } from '../lib/intake-validate.mjs';
+import { buildCors, securityHeaders, timingSafeEqual, jsonResponse } from '../lib/worker-http.mjs';
 
 export default {
     async fetch(request, env) {
@@ -24,7 +25,7 @@ export default {
 
         if (request.method === 'OPTIONS') {
             if (!cors['Access-Control-Allow-Origin']) {
-                return json({ error: 'Origin not allowed' }, 403);
+                return jsonResponse({ error: 'Origin not allowed' }, 403);
             }
             return new Response(null, { status: 204, headers: securityHeaders(cors) });
         }
@@ -39,19 +40,19 @@ export default {
             }
 
             if (url.pathname === '/api/intake/health' && request.method === 'GET') {
-                return json({ ok: true, v: 'phare-ecdh-p256-v2', ts: new Date().toISOString() }, 200, securityHeaders(cors));
+                return jsonResponse({ ok: true, v: PROTOCOL_VERSION, ts: new Date().toISOString() }, 200, securityHeaders(cors));
             }
 
-            return json({ error: 'Not found' }, 404, securityHeaders(cors));
+            return jsonResponse({ error: 'Not found' }, 404, securityHeaders(cors));
         } catch (err) {
-            return json({ error: 'Registry unavailable' }, 503, securityHeaders(cors));
+            return jsonResponse({ error: 'Registry unavailable' }, 503, securityHeaders(cors));
         }
     }
 };
 
 async function handlePubkey(env, cors) {
     const publicKey = await getRegistryPublicJwk(env);
-    return json({ v: 'phare-ecdh-p256-v2', publicKey }, 200, {
+    return jsonResponse({ v: PROTOCOL_VERSION, publicKey }, 200, {
         ...securityHeaders(cors),
         'Cache-Control': 'public, max-age=300'
     });
@@ -59,13 +60,13 @@ async function handlePubkey(env, cors) {
 
 async function handleIntake(request, env, cors) {
     if (!cors['Access-Control-Allow-Origin']) {
-        return json({ error: 'Origin not allowed' }, 403, securityHeaders(cors));
+        return jsonResponse({ error: 'Origin not allowed' }, 403, securityHeaders(cors));
     }
 
     if (env.INVITE_TOKEN) {
         const provided = request.headers.get('X-Phare-Invite') || '';
         if (!provided || !timingSafeEqual(provided, env.INVITE_TOKEN)) {
-            return json({ error: 'Invitation required' }, 403, securityHeaders(cors));
+            return jsonResponse({ error: 'Invitation required' }, 403, securityHeaders(cors));
         }
     }
 
@@ -73,32 +74,31 @@ async function handleIntake(request, env, cors) {
     const ipHash = await hashIp(ip, env);
 
     if (await isRateLimited(ipHash, env)) {
-        return json({ error: 'Rate limit exceeded' }, 429, securityHeaders(cors));
+        return jsonResponse({ error: 'Rate limit exceeded' }, 429, securityHeaders(cors));
     }
 
     const contentLength = parseInt(request.headers.get('Content-Length') || '0', 10);
     if (contentLength > MAX_BODY_BYTES) {
-        return json({ error: 'Payload too large' }, 413, securityHeaders(cors));
+        return jsonResponse({ error: 'Payload too large' }, 413, securityHeaders(cors));
     }
 
     let body;
     try {
         const raw = await request.text();
         if (raw.length > MAX_BODY_BYTES) {
-            return json({ error: 'Payload too large' }, 413, securityHeaders(cors));
+            return jsonResponse({ error: 'Payload too large' }, 413, securityHeaders(cors));
         }
         body = JSON.parse(raw);
     } catch (_) {
-        return json({ error: 'Invalid JSON' }, 400, securityHeaders(cors));
+        return jsonResponse({ error: 'Invalid JSON' }, 400, securityHeaders(cors));
     }
 
-    const hp = body?.b_hp_x7k9 ?? body?.website;
-    if (hp && String(hp).trim()) {
-        return json({ error: 'Invalid submission' }, 400, securityHeaders(cors));
+    if (isHoneypotTriggered(body)) {
+        return jsonResponse({ error: 'Invalid submission' }, 400, securityHeaders(cors));
     }
 
     const err = validateIntakePayload(body);
-    if (err) return json({ error: err }, 400, securityHeaders(cors));
+    if (err) return jsonResponse({ error: err }, 400, securityHeaders(cors));
 
     const id = crypto.randomUUID();
     const record = {
@@ -111,14 +111,14 @@ async function handleIntake(request, env, cors) {
     };
 
     if (!env.PHARE_KV) {
-        return json({ error: 'Registry storage not configured' }, 503, securityHeaders(cors));
+        return jsonResponse({ error: 'Registry storage not configured' }, 503, securityHeaders(cors));
     }
 
     await env.PHARE_KV.put(`intake:${id}`, JSON.stringify(record), {
         expirationTtl: INTAKE_TTL_SEC
     });
 
-    return json({ ok: true, id, receivedAt: record.receivedAt }, 202, securityHeaders(cors));
+    return jsonResponse({ ok: true, id, receivedAt: record.receivedAt }, 202, securityHeaders(cors));
 }
 
 async function isRateLimited(ipHash, env) {
@@ -162,61 +162,4 @@ async function getRegistryPublicJwk(env) {
 function parsePrivateJwk(raw) {
     if (!raw) throw new Error('REGISTRY_PRIVATE_JWK secret not configured');
     return typeof raw === 'string' ? JSON.parse(raw) : raw;
-}
-
-function getAllowedOrigins(env) {
-    return (env.ALLOWED_ORIGINS || '')
-        .split(',')
-        .map(s => s.trim())
-        .filter(Boolean);
-}
-
-function buildCors(request, env) {
-    const origin = request.headers.get('Origin') || '';
-    const allowed = getAllowedOrigins(env);
-
-    const headers = {
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Accept, X-Phare-Invite',
-        'Access-Control-Max-Age': '86400'
-    };
-
-    if (allowed.length === 0) {
-        return headers;
-    }
-
-    if (origin && allowed.includes(origin)) {
-        headers['Access-Control-Allow-Origin'] = origin;
-        headers['Vary'] = 'Origin';
-    }
-
-    return headers;
-}
-
-function securityHeaders(extra = {}) {
-    return {
-        'X-Content-Type-Options': 'nosniff',
-        'X-Frame-Options': 'DENY',
-        'Referrer-Policy': 'no-referrer',
-        'Permissions-Policy': 'interest-cohort=()',
-        'Cache-Control': 'no-store',
-        ...extra
-    };
-}
-
-function timingSafeEqual(a, b) {
-    if (typeof a !== 'string' || typeof b !== 'string') return false;
-    const len = Math.max(a.length, b.length);
-    let mismatch = a.length === b.length ? 0 : 1;
-    for (let i = 0; i < len; i++) {
-        mismatch |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
-    }
-    return mismatch === 0;
-}
-
-function json(data, status, headers = {}) {
-    return new Response(JSON.stringify(data), {
-        status,
-        headers: { 'Content-Type': 'application/json', ...headers }
-    });
 }

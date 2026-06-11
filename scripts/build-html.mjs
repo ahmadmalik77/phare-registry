@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
 function extractBodyFromModular(html) {
-    const match = html.match(/<body>\s*([\s\S]*?)\s*<script src="assets\/config\.js"/);
+    const match = html.match(/<body>\s*([\s\S]*?)\s*<script src="assets\/config\.js[^"]*"/);
     return match ? match[1].trim() : '';
 }
 
@@ -42,8 +42,8 @@ const html = `${head}
 
 ${body}
 
-    <script src="assets/config.js"></script>
-    <script src="assets/app.js" defer></script>
+    <script src="assets/config.js?v=20260611h"></script>
+    <script src="assets/app.js?v=20260611h" defer></script>
 </body>
 </html>
 `;

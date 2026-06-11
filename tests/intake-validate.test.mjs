@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
     validateIntakePayload,
     isValidEphemeralPublicJwk,
+    isHoneypotTriggered,
     PROTOCOL_VERSION
 } from '../lib/intake-validate.mjs';
 
@@ -19,6 +20,13 @@ test('validateIntakePayload rejects bad version and keys', () => {
         validateIntakePayload({ v: PROTOCOL_VERSION, ephemeralPublicKey: { kty: 'EC' }, iv: 'aa==', ciphertext: 'bb==' }),
         'Invalid ephemeral public key'
     );
+});
+
+test('isHoneypotTriggered detects bot submissions', () => {
+    assert.equal(isHoneypotTriggered({ b_hp_x7k9: '' }), false);
+    assert.equal(isHoneypotTriggered({ b_hp_x7k9: 'spam' }), true);
+    assert.equal(isHoneypotTriggered({ website: 'bot@x.com' }), true);
+    assert.equal(isHoneypotTriggered({}), false);
 });
 
 test('validateIntakePayload accepts well-formed envelope', () => {

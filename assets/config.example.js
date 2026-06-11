@@ -12,6 +12,6 @@ window.PHARE_CONFIG = Object.freeze({
     /** Optional SHA-256 fingerprint of canonical public JWK (run: npm run fingerprint) */
     PUBKEY_FINGERPRINT: null,
 
-    /** Optional invite token — must match Worker secret INVITE_TOKEN if set */
+    /** Optional — only if Worker has INVITE_TOKEN secret (invitation-only mode) */
     INVITE_TOKEN: null
 });

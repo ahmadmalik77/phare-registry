@@ -42,7 +42,7 @@
 
 
     /* === 10/10 internal version (exposed for operators / debugging, no UI impact) === */
-    const PHARE_VERSION = '2026.06-production.10';
+    const PHARE_VERSION = '2026.06-production.11';
 
     /*
      * PRODUCTION HARDENING (GitHub Pages host + Cloudflare Worker API):
@@ -61,7 +61,7 @@
      *    This single-file build uses inline script/style; prefer nonces or a
      *    build step that externalizes assets before dropping 'unsafe-inline'.
      *
-     * 2. Honeypot — #a7_website is visually hidden. Reject submissions where
+     * 2. Honeypot — #a7_hp_trap is visually hidden. Reject submissions where
      *    it is non-empty (client guard in submitToAPI; server must enforce too).
      *
      * 3. Rate limiting — enforce at POST /api/intake (e.g. 5 req/IP/hour via
@@ -684,7 +684,14 @@
             })
         }, 20000);
         if (response.status === 429) throw new Error('Server responded 429');
-        if (!response.ok) throw new Error(`Server responded ${response.status}`);
+        if (!response.ok) {
+            let serverMsg = '';
+            try {
+                const errBody = await response.json();
+                serverMsg = errBody?.error ? String(errBody.error) : '';
+            } catch (_) { /* non-JSON error body */ }
+            throw new Error(`Server responded ${response.status}${serverMsg ? ': ' + serverMsg : ''}`);
+        }
         return response.json().catch(() => ({}));
     }
 
@@ -1103,9 +1110,14 @@
                 console.error('[Phare transmit]', err);
                 lastEncryptedPayload = null;
                 const attempts = noteTransmitAttempt();
-                let baseMsg = err.message?.includes('429')
-                    ? 'Registry channel is momentarily constrained. Please wait and retry.'
-                    : 'Transmission failed. Data was not sent. Please retry or contact the registry directly.';
+                let baseMsg = 'Transmission failed. Data was not sent. Please retry or contact the registry directly.';
+                if (err.message?.includes('429')) {
+                    baseMsg = 'Registry channel is momentarily constrained. Please wait and retry.';
+                } else if (err.message?.includes('403')) {
+                    baseMsg = 'Registry channel declined this submission. Please contact the registry directly.';
+                } else if (err.message?.includes('Origin not allowed') || err.message?.includes('503')) {
+                    baseMsg = 'Registry channel is temporarily unavailable. Please retry shortly.';
+                }
                 if (attempts >= 3) {
                     baseMsg += ' (Multiple recent attempts detected — waiting 30–60s may help.)';
                 }
@@ -1161,13 +1173,7 @@
             hasTransmitted = false;
             clearAllLocalData();
             location.reload();
-        },
-
-        /* Expose production crypto hooks for backend integration */
-        crypto: Object.freeze({ generateECDHKeyPair, deriveSharedAESKey, encryptForRegistry }),
-        config: CONFIG,
-        version: PHARE_VERSION
-        // isDemo removed — this build is production-only (ECDH + Cloudflare Worker)
+        }
     };
 
     applyMotionPreference();
@@ -1210,8 +1216,6 @@
             );
         }, 600);
     }
-
-    window.PhareRegistry = Object.freeze(API);
 
     requestAnimationFrame(() => {
         setTimeout(dismissInitLoader, 320);

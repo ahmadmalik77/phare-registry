@@ -1,6 +1,6 @@
 # Phare — The Lighthouse (Production)
 
-Private, invitation-only confidential executive intake for UHNWIs.  
+Private, confidential executive intake for UHNWIs.  
 Client-side ECDH P-256 + AES-256-GCM encryption. Zero-retention Cloudflare Worker backend.
 
 ```
@@ -50,13 +50,18 @@ console.log('PUBLIC:', await crypto.subtle.exportKey('jwk', kp.publicKey));
 
 > Browser intake uses `deriveBits` for ECDH — do **not** use `deriveKey` on imported public keys.
 
-Set secrets (all required except INVITE_TOKEN):
+Set secrets (required):
 
 ```bash
 wrangler secret put REGISTRY_PRIVATE_JWK
 wrangler secret put ALLOWED_ORIGINS      # e.g. https://youruser.github.io,https://intake.phare.com
 wrangler secret put IP_HASH_SALT         # random 32+ char string
-wrangler secret put INVITE_TOKEN         # required for invitation-only — share ?invite=TOKEN links (never put token in config.js)
+```
+
+Optional invitation-only gate:
+
+```bash
+wrangler secret put INVITE_TOKEN         # share ?invite=TOKEN links (never put token in config.js)
 ```
 
 Deploy:
@@ -80,7 +85,8 @@ npm run fingerprint
 # Paste PUBLIC JWK → add hash to PUBKEY_FINGERPRINT in config.js
 ```
 
-Invitation links: `https://your-site/?invite=YOUR_TOKEN` (stored in session; sent as `X-Phare-Invite`).
+Default (Option B): public intake — no invite required.  
+Optional (Option A): `https://your-site/?invite=YOUR_TOKEN` (stored in session; sent as `X-Phare-Invite`).
 
 ### 3. Build & publish
 
@@ -123,7 +129,7 @@ Built-in sample roundtrip: **Generate Sample Keypair + Test Roundtrip**.
 - [ ] Honeypot filled → 400
 - [ ] 6th submission/IP/hour → 429
 - [ ] `operator/decrypt.html` decrypts real record
-- [ ] Invite token enforced (if configured)
+- [ ] Invite token enforced (only if Option A configured)
 - [ ] Pubkey fingerprint matches (if configured)
 
 ---
