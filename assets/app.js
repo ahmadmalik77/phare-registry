@@ -655,9 +655,18 @@
         closeBtn.focus();
     }
 
+    function getHoneypotValue() {
+        return el('a7_hp_trap')?.value?.trim() || '';
+    }
+
+    function clearHoneypot() {
+        const hp = el('a7_hp_trap');
+        if (hp) hp.value = '';
+    }
+
     async function submitToAPI(encryptedPayload) {
-        /* Honeypot: bots often fill hidden fields — server must reject too */
-        if (el('a7_website')?.value.trim()) {
+        /* Honeypot: bots fill hidden fields — name/email autofill must not trip this */
+        if (getHoneypotValue()) {
             throw new Error('Invalid submission');
         }
 
@@ -670,7 +679,7 @@
             headers,
             body: JSON.stringify({
                 ...encryptedPayload,
-                website: el('a7_website')?.value || ''
+                b_hp_x7k9: ''
             })
         }, 20000);
         if (response.status === 429) throw new Error('Server responded 429');
@@ -1013,6 +1022,7 @@
 
             isProcessingCrypto = true;
             setTransmitError('');
+            clearHoneypot();
             const btn = el('btn-transmit');
             const originalLabel = btn.textContent;
             btn.classList.add('transmitting');
@@ -1045,6 +1055,7 @@
                 setSuccessActionsEnabled(true, { hideTransmit: hasTransmitted });
                 lastIntakeData = null;
             } catch (err) {
+                console.error('[Phare transmit]', err);
                 lastEncryptedPayload = null;
                 const attempts = noteTransmitAttempt();
                 let baseMsg = err.message?.includes('429')
@@ -1130,6 +1141,7 @@
     initCustomCursor();
     initKeyboardNavigation();
     bindEvents();
+    clearHoneypot();
     setSuccessActionsEnabled(false);
 
     // Cache hot elements once at startup (minor perf win, zero visual/aesthetic impact)
@@ -1142,7 +1154,6 @@
 
     window.addEventListener('beforeunload', () => {
         cryptoWorker.terminate();
-        URL.revokeObjectURL(workerBlobUrl);
     });
 
     if (!crypto?.subtle) {

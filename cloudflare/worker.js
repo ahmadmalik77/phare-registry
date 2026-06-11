@@ -92,7 +92,8 @@ async function handleIntake(request, env, cors) {
         return json({ error: 'Invalid JSON' }, 400, securityHeaders(cors));
     }
 
-    if (body?.website && String(body.website).trim()) {
+    const hp = body?.b_hp_x7k9 ?? body?.website;
+    if (hp && String(hp).trim()) {
         return json({ error: 'Invalid submission' }, 400, securityHeaders(cors));
     }
 
