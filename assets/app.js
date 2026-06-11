@@ -42,7 +42,7 @@
 
 
     /* === 10/10 internal version (exposed for operators / debugging, no UI impact) === */
-    const PHARE_VERSION = '2026.06-production';
+    const PHARE_VERSION = '2026.06-production.3';
 
     /*
      * PRODUCTION HARDENING (GitHub Pages host + Cloudflare Worker API):
@@ -698,17 +698,50 @@
 
     /* === 3b. PRODUCTION ECDH HELPERS (the real registry encryption path) === */
     async function generateECDHKeyPair() {
-        return crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveKey', 'deriveBits']);
+        return crypto.subtle.generateKey(
+            { name: 'ECDH', namedCurve: 'P-256' },
+            true,
+            ['deriveBits']
+        );
     }
 
+    /**
+     * deriveBits + raw AES import — maximum browser compatibility for ECDH peers.
+     */
     async function deriveSharedAESKey(privateKey, peerPublicKey) {
-        return crypto.subtle.deriveKey(
+        const bits = await crypto.subtle.deriveBits(
             { name: 'ECDH', public: peerPublicKey },
             privateKey,
+            256
+        );
+        return crypto.subtle.importKey(
+            'raw',
+            bits,
             { name: 'AES-GCM', length: 256 },
             false,
             ['encrypt', 'decrypt']
         );
+    }
+
+    async function importRegistryPublicKey(jwk) {
+        const clean = { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y };
+        try {
+            return await crypto.subtle.importKey(
+                'jwk',
+                clean,
+                { name: 'ECDH', namedCurve: 'P-256' },
+                true,
+                []
+            );
+        } catch (_) {
+            return crypto.subtle.importKey(
+                'jwk',
+                clean,
+                { name: 'ECDH', namedCurve: 'P-256' },
+                false,
+                []
+            );
+        }
     }
 
     /**
@@ -736,14 +769,7 @@
                 throw new Error('Registry public key fingerprint mismatch — possible interception');
             }
         }
-        /* Public ECDH keys are used as deriveKey peers — empty usages (not ['deriveKey']) */
-        return crypto.subtle.importKey(
-            'jwk',
-            data.publicKey,
-            { name: 'ECDH', namedCurve: 'P-256' },
-            true,
-            []
-        );
+        return importRegistryPublicKey(data.publicKey);
     }
 
     /**
@@ -782,6 +808,8 @@
         const ring = el('cur-ring');
         let ringX = 0, ringY = 0, dotX = 0, dotY = 0;
         let cursorInitialized = false;
+        let resizeCooldown = false;
+        let resizeCooldownTimer = null;
 
         document.addEventListener('mousemove', e => {
             if (!cursorInitialized) {
@@ -808,15 +836,28 @@
             requestAnimationFrame(trackRing);
         })();
 
-        document.addEventListener('mouseleave', () => {
-            dot.classList.add('cur-hidden');
-            ring.classList.add('cur-hidden');
+        document.addEventListener('mouseleave', e => {
+            if (resizeCooldown) return;
+            if (!e.relatedTarget && e.clientY <= 0) {
+                dot.classList.add('cur-hidden');
+                ring.classList.add('cur-hidden');
+            }
         });
         document.addEventListener('mouseenter', () => {
-            if (cursorInitialized) {
-                dot.classList.remove('cur-hidden');
-                ring.classList.remove('cur-hidden');
-            }
+            dot.classList.remove('cur-hidden');
+            ring.classList.remove('cur-hidden');
+        });
+
+        window.addEventListener('resize', () => {
+            resizeCooldown = true;
+            clearTimeout(resizeCooldownTimer);
+            dot.classList.remove('cur-hidden');
+            ring.classList.remove('cur-hidden');
+            document.body.classList.add('cursor-fallback');
+            resizeCooldownTimer = setTimeout(() => {
+                resizeCooldown = false;
+                document.body.classList.remove('cursor-fallback');
+            }, 400);
         });
 
         if (!prefersReducedMotion) {
