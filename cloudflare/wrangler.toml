@@ -1,0 +1,14 @@
+name = "phare-intake"
+main = "worker.js"
+compatibility_date = "2025-06-01"
+
+# Create namespace: wrangler kv namespace create PHARE_KV
+# Then paste the id below:
+[[kv_namespaces]]
+binding = "PHARE_KV"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+
+# Optional: bind custom domain routes after deploy
+# [[routes]]
+# pattern = "intake.phare.lighthouse/*"
+# zone_name = "phare.lighthouse"

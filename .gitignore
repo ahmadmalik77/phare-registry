@@ -1,0 +1,16 @@
+.DS_Store
+Thumbs.db
+.wrangler/
+.dev.vars
+node_modules/
+*.log
+dist-pages/
+index.production.html
+assets/app.raw.js
+
+# Deploy secrets — never commit live Worker URLs or invite tokens
+assets/config.js
+
+# Operator key material (if ever saved locally)
+*.jwk
+*.key

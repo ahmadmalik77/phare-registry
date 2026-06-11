@@ -1,0 +1,38 @@
+name: Phare CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Create CI config
+        run: |
+          cat > assets/config.js <<'EOF'
+          window.PHARE_CONFIG = Object.freeze({
+            API_URL: 'https://phare-intake.ci-test.workers.dev/api/intake',
+            PUBKEY_URL: 'https://phare-intake.ci-test.workers.dev/api/intake/pubkey',
+            REGISTRY_EMAIL: 'registry@phare.lighthouse',
+            PUBKEY_FINGERPRINT: null,
+            INVITE_TOKEN: null
+          });
+          EOF
+
+      - name: Build production assets
+        run: npm run build
+
+      - name: Run crypto tests
+        run: npm test
+
+      - name: Validate production structure
+        run: npm run validate

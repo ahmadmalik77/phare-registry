@@ -1,0 +1,2434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Phare — The Lighthouse. A private, invitation-only registry for confidential executive intake.">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#0A1118">
+    <title>Phare — The Lighthouse · Registry</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230A1118'/%3E%3Ctext x='16' y='22' font-family='Georgia,serif' font-size='18' font-style='italic' fill='%23C8A96A' text-anchor='middle'%3EP%3C/text%3E%3C/svg%3E">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&family=Jost:wght@100;200;300;400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            color-scheme: dark;
+            --void:  #0A1118;
+            --edge:  #1C2733;
+            --shade: #2A3745;
+            --smoke: #8E96A0;
+            --haze:  #68747E;
+            --veil:  #96A0AA;
+            --paper: #E8E4DF;
+            --white: #FFFFFF;
+            --gold:  #C8A96A;
+            --gd2:   rgba(200, 169, 106, 0.05);
+            --error: #c88a8a;
+            --error-edge: #b85c5c;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box; margin: 0; padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        html { background: var(--void); scroll-behavior: smooth; }
+
+        body {
+            background: var(--void);
+            color: var(--haze);
+            font-family: 'Jost', sans-serif;
+            font-weight: 200;
+            height: 100svh;
+            overflow: hidden;
+            letter-spacing: 0.07em;
+        }
+
+        body::after {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            opacity: 0.025;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translateZ(0);
+        }
+
+        .skip-link {
+            position: absolute;
+            top: -100%;
+            left: 1rem;
+            z-index: 100000;
+            padding: 0.75rem 1.25rem;
+            background: var(--void);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            font-size: 0.65rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+
+        .skip-link:focus {
+            top: 1rem;
+            outline: 2px solid var(--gold);
+            outline-offset: 2px;
+        }
+
+        body.has-custom-cursor { cursor: none; }
+
+        body.has-custom-cursor button,
+        body.has-custom-cursor .opt,
+        body.has-custom-cursor .cta,
+        body.has-custom-cursor .nav-btn,
+        body.has-custom-cursor .secure-btn { cursor: none; }
+
+        body.has-custom-cursor .text-input { cursor: text; }
+
+        .cur-dot {
+            position: fixed;
+            width: 5px; height: 5px;
+            background: var(--gold);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 99999;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: width 0.25s ease, height 0.25s ease, opacity 0.25s ease;
+            will-change: left, top;
+        }
+
+        .cur-ring {
+            position: fixed;
+            width: 26px; height: 26px;
+            border: 1px solid rgba(200,169,106,.28);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 99998;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: width 0.35s ease, height 0.35s ease, border-color 0.35s ease, opacity 0.25s ease;
+            will-change: left, top;
+        }
+
+        .cur-dot.hov  { width: 8px; height: 8px; }
+        .cur-ring.hov { width: 36px; height: 36px; border-color: rgba(200,169,106,.5); }
+        .cur-hidden   { opacity: 0 !important; }
+
+        .frame {
+            display: flex;
+            width: 100vw; height: 100svh;
+        }
+
+        .col-left {
+            width: 45%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 6rem 5.5rem;
+            position: relative; overflow: hidden;
+            border-right: 1px solid var(--edge);
+        }
+
+        .col-left::after {
+            content: '';
+            position: absolute; right: -1px; top: 0;
+            width: 1px; height: 0;
+            background: linear-gradient(to bottom, transparent 0%, var(--gold) 25%, var(--gold) 75%, transparent 100%);
+            opacity: 0.2;
+            animation: drawLine 2s cubic-bezier(0.16,1,0.3,1) 0.5s forwards;
+        }
+
+        @keyframes drawLine { to { height: 100%; } }
+
+        .beacon {
+            position: absolute;
+            top: 50%; right: -1px;
+            width: 0; height: 0;
+            z-index: 4; pointer-events: none;
+        }
+
+        .b-ring {
+            position: absolute;
+            width: 44px; height: 44px;
+            border: 1px solid var(--gold);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            animation: beacon 5s ease-out infinite;
+            will-change: transform, opacity;
+        }
+
+        .b-ring:nth-child(2) { animation-delay: 2.5s; }
+
+        @keyframes beacon {
+            0%   { transform: translate(-50%, -50%) scale(0); opacity: 0.28; }
+            100% { transform: translate(-50%, -50%) scale(3.8); opacity: 0; }
+        }
+
+        .vert-tag {
+            position: absolute;
+            left: 1.2rem; top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            transform-origin: center;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.46rem; font-weight: 200;
+            letter-spacing: 0.62em;
+            text-transform: uppercase;
+            color: var(--shade);
+            white-space: nowrap;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .col-left::before {
+            content: '';
+            position: absolute; top: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 1px; height: 180px;
+            background: linear-gradient(to bottom, rgba(200,169,106,.14), transparent);
+        }
+
+        .wordmark {
+            font-size: 0.65rem; font-weight: 300;
+            letter-spacing: 0.52em;
+            text-transform: uppercase;
+            color: var(--haze);
+            animation: rise 1.2s cubic-bezier(.16,1,.3,1) 0.15s both;
+        }
+
+        .gold-rule {
+            width: 0; height: 1px;
+            background: var(--gold);
+            margin-top: 1.1rem;
+            opacity: 0;
+            animation: ruleIn 1.6s cubic-bezier(.16,1,.3,1) 0.3s both;
+        }
+
+        @keyframes ruleIn { to { width: 26px; opacity: 0.48; } }
+
+        /* Hero copy stays untransformed — moving text via transform causes subpixel jitter */
+        .hero {
+            max-width: 400px;
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 5.2vw, 3.6rem);
+            font-weight: 400; font-style: italic;
+            line-height: 1.25; letter-spacing: -0.01em;
+            color: var(--white);
+            margin-bottom: clamp(1.5rem, 2.8vw, 2rem);
+            animation: rise 1.2s cubic-bezier(.16,1,.3,1) 0.35s both;
+        }
+
+        .hero-sub {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1rem, 1.6vw, 1.12rem);
+            font-style: italic; font-weight: 300;
+            line-height: 1.8; letter-spacing: 0.025em;
+            color: var(--smoke);
+            animation: rise 1.2s cubic-bezier(.16,1,.3,1) 0.5s both;
+        }
+
+        .floor {
+            font-size: 0.58rem;
+            letter-spacing: 0.48em;
+            text-transform: uppercase; color: var(--smoke);
+            font-weight: 300;
+            animation: rise 1.2s cubic-bezier(.16,1,.3,1) 0.6s both;
+        }
+
+        .registry-note {
+            font-size: 0.58rem; letter-spacing: 0.08em;
+            color: var(--smoke);
+            font-weight: 300;
+            margin-top: 0.6rem;
+            opacity: 0.65;
+        }
+
+        .col-right {
+            width: 55%;
+            height: 100%;
+            position: relative;
+            display: flex; align-items: center;
+            justify-content: flex-start;
+            padding: 6rem 7.5rem;
+            overflow: hidden;
+        }
+
+        .col-right::before {
+            content: '';
+            position: absolute;
+            width: 550px;
+            height: 550px; border-radius: 50%;
+            top: 50%; left: 45%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, var(--gd2) 0%, transparent 65%);
+            pointer-events: none;
+        }
+
+        .ghost-p {
+            position: absolute;
+            right: -1.5rem; bottom: -3rem;
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(14rem, 25vw, 22rem);
+            font-style: italic; font-weight: 400;
+            color: var(--white);
+            opacity: 0.022; line-height: 1;
+            pointer-events: none;
+            user-select: none;
+            animation: rise 2s cubic-bezier(.16,1,.3,1) 1.2s both;
+            transition: transform 0.9s cubic-bezier(.16,1,.3,1);
+            will-change: transform;
+        }
+
+        .panel {
+            position: absolute;
+            display: block;
+            left: 7.5rem; right: 4rem;
+            max-width: 420px;
+            width: 100%;
+            transition: opacity 0.65s cubic-bezier(.16,1,.3,1),
+                        transform 0.65s cubic-bezier(.16,1,.3,1);
+            z-index: 2;
+            will-change: transform, opacity;
+        }
+
+        .panel.off {
+            opacity: 0; transform: translateY(15px);
+            pointer-events: none;
+            animation: none !important;
+        }
+
+        #panel-landing {
+            animation: rise 1.1s cubic-bezier(.16,1,.3,1) 0.65s both;
+        }
+
+        .landing-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.85rem, 3.3vw, 2.3rem);
+            font-weight: 400;
+            font-style: italic;
+            color: var(--white);
+            letter-spacing: 0.015em;
+            line-height: 1.25;
+            margin-bottom: 1.2rem;
+        }
+
+        .landing-body {
+            font-size: clamp(0.78rem, 1.4vw, 0.85rem);
+            font-weight: 300;
+            line-height: 1.85;
+            color: var(--smoke); max-width: 320px;
+            letter-spacing: 0.06em;
+        }
+
+        .cta {
+            display: inline-block;
+            margin-top: 3.25rem;
+            background: transparent; border: none;
+            cursor: pointer; outline: none;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.65rem; font-weight: 400;
+            letter-spacing: 0.48em;
+            text-transform: uppercase;
+            color: var(--white); padding-bottom: 0.55rem;
+            position: relative;
+            transition: color 0.3s ease, letter-spacing 0.4s cubic-bezier(.16,1,.3,1);
+        }
+
+        .cta::before, .cta::after {
+            content: ''; position: absolute;
+            bottom: 0; left: 0;
+            width: 100%; height: 1px;
+            transition: transform 0.5s cubic-bezier(.16,1,.3,1);
+        }
+
+        .cta::before {
+            background: var(--shade);
+            transform-origin: right;
+            transform: scaleX(1);
+        }
+
+        .cta::after {
+            background: var(--gold);
+            transform-origin: left;
+            transform: scaleX(0);
+            transition-delay: 0.05s;
+        }
+
+        .cta:hover::before { transform: scaleX(0); }
+        .cta:hover::after  { transform: scaleX(1); }
+        .cta:hover { color: var(--paper); letter-spacing: 0.52em; }
+        .cta:focus-visible { outline: 1px solid var(--gold); outline-offset: 4px; }
+
+        .progress-wrap { margin-bottom: 2.5rem; }
+
+        .step-label {
+            font-size: 0.58rem;
+            letter-spacing: 0.42em;
+            text-transform: uppercase;
+            color: var(--gold);
+            opacity: 0.75;
+            margin-bottom: 0.85rem;
+        }
+
+        .progress { display: flex; flex-wrap: wrap; gap: 6px; max-width: 100%; }
+
+        .seg {
+            height: 1px;
+            width: 32px;
+            background: var(--edge);
+            transition: background 0.45s ease, opacity 0.45s ease;
+        }
+        .seg.lit    { background: var(--gold); opacity: 0.9; }
+        .seg.active { background: var(--gold); opacity: 0.45; }
+
+        .step { display: none; will-change: transform, opacity; }
+
+        .step.on         { display: block; animation: slideRight 0.55s cubic-bezier(.16,1,.3,1) both; }
+        .step.on.reverse { animation: slideLeft  0.55s cubic-bezier(.16,1,.3,1) both; }
+
+        @keyframes slideRight { from { opacity: 0; transform: translateX(28px);  } to { opacity: 1; transform: translateX(0); } }
+        @keyframes slideLeft  { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: translateX(0); } }
+
+        .step-q {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.35rem, 2.5vw, 1.6rem);
+            font-weight: 400; font-style: italic;
+            color: var(--white); line-height: 1.35;
+            margin-bottom: 2.25rem;
+        }
+
+        .step-q:focus { outline: none; }
+        .step-q:focus-visible { outline: 1px solid var(--gold); outline-offset: 4px; }
+
+        .opt {
+            display: flex; align-items: center; gap: 15px;
+            padding: 1.2rem 0;
+            border: none;
+            border-bottom: 1px solid var(--edge);
+            background: transparent;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            color: var(--veil);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 300;
+            letter-spacing: 0.08em;
+            transition: padding-left 0.3s cubic-bezier(.16,1,.3,1), color 0.25s ease;
+        }
+
+        .opt:hover { padding-left: 6px; color: var(--paper); }
+
+        .opt[aria-checked="true"],
+        .opt.chosen {
+            color: var(--white);
+            border-bottom-color: var(--gold);
+        }
+
+        .opt:focus-visible {
+            outline: 1px solid var(--gold);
+            outline-offset: 3px;
+        }
+
+        .input-group { margin-bottom: 1.6rem; }
+
+        .input-group label {
+            display: block;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--smoke);
+            margin-bottom: 0.5rem;
+        }
+
+        .text-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--edge);
+            color: var(--white);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 300;
+            letter-spacing: 0.08em;
+            padding: 0.75rem 0;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .text-input:focus { border-bottom-color: var(--gold); }
+        .text-input:focus-visible { outline: 1px solid var(--gold); outline-offset: 4px; }
+        .text-input.invalid { border-bottom-color: var(--error-edge); }
+
+        .input-error {
+            font-size: 0.65rem;
+            color: var(--error);
+            margin-top: 0.35rem;
+            letter-spacing: 0.04em;
+            display: none;
+        }
+
+        .input-error.show { display: block; }
+
+        .input-hint {
+            font-size: 0.58rem;
+            color: var(--smoke);
+            margin-top: 0.35rem;
+            letter-spacing: 0.04em;
+            opacity: 0.65;
+            line-height: 1.45;
+        }
+
+        .hp-field {
+            position: absolute;
+            left: -9999px;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .nav {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-top: 2.5rem;
+        }
+
+        .nav-btn {
+            background: transparent; border: none;
+            cursor: pointer;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.65rem; font-weight: 300;
+            letter-spacing: 0.42em; text-transform: uppercase;
+            color: var(--smoke); outline: none;
+            transition: color 0.25s ease;
+        }
+
+        .nav-btn:hover { color: var(--white); }
+        .nav-btn:focus-visible { outline: 1px solid var(--gold); outline-offset: 3px; }
+
+        .nav-btn.go {
+            color: var(--haze); font-weight: 400;
+            opacity: 0.35; pointer-events: none;
+        }
+
+        .nav-btn.go.ready {
+            opacity: 1; color: var(--white);
+            pointer-events: auto;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        .nav-btn.go.transmitting {
+            opacity: 1 !important;
+            pointer-events: none;
+            color: var(--gold);
+            position: relative;
+        }
+
+        .nav-btn.go.transmitting::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            animation: transmitShimmer 1.4s ease-in-out infinite;
+        }
+
+        @keyframes transmitShimmer {
+            0%, 100% { opacity: 0.25; transform: scaleX(0.35); }
+            50%       { opacity: 0.85; transform: scaleX(1); }
+        }
+
+        .success-mark {
+            display: block;
+            font-family: 'Jost', sans-serif;
+            font-size: 0.65rem; font-weight: 300;
+            letter-spacing: 0.52em; text-transform: uppercase;
+            color: var(--gold); opacity: 0.8;
+            margin-bottom: 2.5rem;
+        }
+
+        .success-body {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.15rem, 2.3vw, 1.35rem);
+            font-style: italic; font-weight: 300;
+            color: var(--paper); line-height: 1.85;
+            letter-spacing: 0.02em;
+        }
+
+        #panel-success { position: relative; overflow: visible; }
+
+        .success-beacon {
+            position: absolute;
+            top: -0.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 8px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .success-beacon .sb-ring {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border: 1px solid rgba(200, 169, 106, 0.35);
+            border-radius: 50%;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+        }
+
+        #panel-success.celebrate .success-beacon .sb-ring {
+            animation: successPulse 2.2s ease-out forwards;
+        }
+
+        #panel-success.celebrate .success-beacon .sb-ring:nth-child(2) {
+            animation-delay: 0.35s;
+        }
+
+        @keyframes successPulse {
+            0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 0.4; }
+            100% { transform: translate(-50%, -50%) scale(4);   opacity: 0; }
+        }
+
+        .success-confetti {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .confetti-piece {
+            position: absolute;
+            width: 3px;
+            height: 6px;
+            background: var(--gold);
+            opacity: 0;
+            top: 12%;
+            left: var(--x, 50%);
+            transform: rotate(var(--r, 0deg));
+        }
+
+        #panel-success.celebrate .confetti-piece {
+            animation: confettiFall 1.8s ease-out forwards;
+            animation-delay: var(--d, 0s);
+        }
+
+        @keyframes confettiFall {
+            0%   { opacity: 0;   transform: translateY(0) rotate(0deg); }
+            15%  { opacity: 0.3; }
+            100% { opacity: 0;   transform: translateY(110px) rotate(160deg); }
+        }
+
+        body.reduce-motion #panel-success.celebrate-static .success-mark {
+            animation: successGlow 1.2s ease-out;
+        }
+
+        @keyframes successGlow {
+            0%, 100% { opacity: 0.8; }
+            50%       { opacity: 1; color: var(--white); }
+        }
+
+        .secure-actions {
+            margin-top: 2.75rem;
+            display: flex; flex-direction: column; gap: 0.75rem;
+        }
+
+        .secure-btn {
+            background: transparent;
+            border: 1px solid var(--edge);
+            color: var(--veil);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.62rem; font-weight: 300;
+            letter-spacing: 0.48em; text-transform: uppercase;
+            padding: 0.85rem 1.25rem;
+            transition: all 0.25s cubic-bezier(.16,1,.3,1);
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .secure-btn:hover {
+            border-color: var(--gold);
+            color: var(--white);
+            padding-left: 1.5rem;
+        }
+
+        .secure-btn:focus-visible {
+            outline: 1px solid var(--gold);
+            outline-offset: 3px;
+        }
+
+        .secure-btn:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .draft-indicator {
+            position: absolute;
+            top: 1.1rem; right: 7.5rem;
+            font-size: 0.52rem; letter-spacing: 0.08em;
+            color: var(--gold); opacity: 0;
+            transition: opacity 0.4s ease; pointer-events: none;
+        }
+
+        .draft-indicator.show { opacity: 0.6; }
+
+        .encryption-note {
+            font-size: 0.58rem;
+            letter-spacing: 0.06em;
+            color: var(--smoke);
+            margin-top: 1.25rem;
+            opacity: 0.7;
+            line-height: 1.5;
+        }
+
+        .production-note {
+            font-size: 0.52rem;
+            letter-spacing: 0.05em;
+            color: var(--gold);
+            opacity: 0.65;
+            margin-top: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .status-banner {
+            font-size: 0.58rem;
+            letter-spacing: 0.06em;
+            color: var(--error);
+            margin-top: 0.75rem;
+            display: none;
+            line-height: 1.5;
+        }
+
+        .status-banner.show { display: block; }
+
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(10,17,24,0.92);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 99990;
+        }
+
+        .modal-card {
+            max-width: 520px; width: 92%;
+            background: var(--void);
+            border: 1px solid var(--gold);
+            border-radius: 4px;
+            padding: 2.25rem 2rem;
+            color: var(--paper);
+            font-family: 'Jost', sans-serif;
+        }
+
+        .modal-title {
+            color: var(--gold);
+            font-size: 0.65rem;
+            letter-spacing: 0.52em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .modal-pre {
+            background: var(--edge);
+            padding: 1.25rem;
+            border-radius: 2px;
+            font-size: 0.78rem;
+            line-height: 1.55;
+            white-space: pre-wrap;
+            overflow: auto;
+            max-height: 320px;
+            color: var(--veil);
+        }
+
+        .modal-footer {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        .modal-note {
+            margin-top: 1rem;
+            font-size: 0.58rem;
+            opacity: 0.6;
+            color: var(--smoke);
+        }
+
+        .modal-close {
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 0.6rem 1.4rem;
+            font-size: 0.65rem;
+            letter-spacing: 0.48em;
+            text-transform: uppercase;
+            cursor: pointer;
+            font-family: 'Jost', sans-serif;
+        }
+
+        .modal-close:focus-visible {
+            outline: 2px solid var(--gold);
+            outline-offset: 2px;
+        }
+
+        .restore-dialog {
+            position: fixed; inset: 0;
+            background: rgba(10,17,24,0.88);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 99980;
+        }
+
+        .restore-dialog.open { display: flex; }
+
+        .restore-card {
+            max-width: 440px; width: 92%;
+            background: var(--void);
+            border: 1px solid var(--edge);
+            padding: 2rem;
+            color: var(--paper);
+        }
+
+        .restore-card h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.35rem;
+            font-style: italic;
+            font-weight: 400;
+            color: var(--white);
+            margin-bottom: 0.75rem;
+        }
+
+        .restore-card p {
+            font-size: 0.82rem;
+            line-height: 1.7;
+            color: var(--smoke);
+            margin-bottom: 1.5rem;
+        }
+
+        .restore-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        .utility-bar {
+            position: absolute;
+            bottom: 1.25rem;
+            right: 7.5rem;
+            z-index: 3;
+        }
+
+        .clear-data-btn {
+            background: transparent;
+            border: none;
+            color: var(--shade);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.5rem;
+            font-weight: 300;
+            letter-spacing: 0.38em;
+            text-transform: uppercase;
+            cursor: pointer;
+            padding: 0.25rem 0;
+            transition: color 0.25s ease;
+        }
+
+        .clear-data-btn:hover { color: var(--smoke); }
+        .clear-data-btn:focus-visible {
+            outline: 1px solid var(--gold);
+            outline-offset: 3px;
+        }
+
+        .init-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 100001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--void);
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .init-loader.done {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .init-loader span {
+            font-size: 0.58rem;
+            letter-spacing: 0.48em;
+            text-transform: uppercase;
+            color: var(--gold);
+            opacity: 0.7;
+        }
+
+        /* demo-only / .is-demo rules removed — production build only */
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            .beacon, .b-ring, .gold-rule, .hero, .panel, .step,
+            .cur-dot, .cur-ring, body::after, .col-left::after {
+                animation: none !important;
+                transition: none !important;
+            }
+            .hero { transform: none !important; }
+        }
+
+        body.reduce-motion .beacon,
+        body.reduce-motion .b-ring,
+        body.reduce-motion .col-left::after,
+        body.reduce-motion .gold-rule,
+        body.reduce-motion .hero,
+        body.reduce-motion .panel,
+        body.reduce-motion .step,
+        body.reduce-motion .ghost-p,
+        body.reduce-motion .wordmark,
+        body.reduce-motion .hero-title,
+        body.reduce-motion .hero-sub,
+        body.reduce-motion .floor,
+        body.reduce-motion .cur-dot,
+        body.reduce-motion .cur-ring,
+        body.reduce-motion .nav-btn.go.transmitting::after,
+        body.reduce-motion #panel-success.celebrate .success-beacon .sb-ring,
+        body.reduce-motion #panel-success.celebrate .confetti-piece {
+            animation: none !important;
+            transition: none !important;
+        }
+
+        body.reduce-motion::after {
+            animation: none !important;
+            transition: none !important;
+        }
+
+        body.reduce-motion .hero { transform: none !important; }
+
+        .secure-btn.transmitted-hidden { display: none !important; }
+
+        @media print {
+            html, body, .frame {
+                background: #0A1118 !important;
+                color: #68747E !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                height: auto !important; overflow: visible !important;
+            }
+            .skip-link, .cur-dot, .cur-ring, .beacon, .ghost-p, body::after,
+            .col-right::before, .draft-indicator, .secure-actions,
+            .encryption-note, .restore-dialog, .clear-data-dialog, .modal-overlay,
+            .init-loader, .utility-bar {
+                display: none !important;
+            }
+            .frame { flex-direction: column !important; height: auto !important; }
+            .col-left, .col-right {
+                width: 100% !important; height: auto !important;
+                border: none !important; padding: 3rem !important;
+            }
+            .panel {
+                position: static !important; max-width: 100% !important;
+                opacity: 1 !important; transform: none !important;
+            }
+            .panel.off, .step:not(.on), .nav, .progress, .cta { display: none !important; }
+        }
+
+        @media (max-width: 1080px) {
+            html, body { overflow-y: auto; height: auto; cursor: auto; }
+            .cur-dot, .cur-ring { display: none !important; }
+            .frame { flex-direction: column; height: auto; min-height: 100svh; }
+            .col-left {
+                width: 100%; height: auto;
+                padding: 4.5rem 2.5rem 3.5rem;
+                border-right: none;
+                border-bottom: 1px solid var(--edge);
+            }
+            .col-left::after, .col-left::before, body::after, .beacon, .vert-tag { display: none !important; }
+            .hero { margin: 2.5rem 0; max-width: 100%; }
+            .hero-title { font-size: 2.4rem; line-height: 1.3; margin-bottom: 1.5rem; }
+            .hero-sub { font-size: 1.05rem; line-height: 1.75; }
+            .col-right {
+                width: 100%; height: auto;
+                min-height: 520px;
+                padding: 4rem 2.5rem 5rem;
+                align-items: center; justify-content: center;
+            }
+            .panel {
+                position: relative; top: auto; left: auto; right: auto;
+                max-width: 100%; width: 100%;
+            }
+            .panel.off { display: none; }
+            .ghost-p { font-size: clamp(8rem, 30vw, 14rem); right: -0.5rem; bottom: -1rem; }
+            .nav { margin-top: 2rem; }
+            .step-q { font-size: 1.4rem; margin-bottom: 2rem; }
+            .draft-indicator { top: 0.6rem; right: 2.5rem; }
+            .encryption-note { margin-top: 1rem; }
+            .utility-bar { right: 2.5rem; bottom: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="init-loader" class="init-loader" aria-hidden="true">
+    <span>Initializing secure session</span>
+</div>
+
+<a href="#btn-initiate" class="skip-link">Skip to intake</a>
+
+<div class="cur-dot"  id="cur-dot"  aria-hidden="true"></div>
+<div class="cur-ring" id="cur-ring" aria-hidden="true"></div>
+
+<main class="frame">
+
+    <section class="col-left" id="col-left" aria-label="Brand introduction">
+        <div class="beacon" aria-hidden="true">
+            <div class="b-ring"></div>
+            <div class="b-ring"></div>
+        </div>
+
+        <div class="vert-tag" aria-hidden="true">Registry · 2026</div>
+
+        <header>
+            <div class="wordmark">Phare — The Lighthouse</div>
+            <div class="gold-rule" aria-hidden="true"></div>
+            <p class="registry-note">A NovaWorks Studio Registry • Private Intake</p>
+        </header>
+
+        <div class="hero" id="hero">
+            <h1 class="hero-title">Counsel<br>in absolute<br>silence.</h1>
+            <p class="hero-sub">A private harbor for leaders who carry<br>weight the world cannot witness.</p>
+        </div>
+
+        <p class="floor">By invitation only</p>
+    </section>
+
+    <section class="col-right" aria-label="Intake portal">
+
+        <div class="ghost-p" aria-hidden="true">P</div>
+
+        <div id="draft-indicator" class="draft-indicator" aria-live="polite" aria-atomic="true">
+            Draft encrypted on this device
+        </div>
+
+        <div id="panel-landing" class="panel" tabindex="-1">
+            <h2 class="landing-title">Access</h2>
+            <p class="landing-body">
+                Operational capacity is restricted.<br>
+                Establish a clearance handshake to proceed.
+            </p>
+            <button type="button" class="cta" id="btn-initiate">Initiate Ingest</button>
+        </div>
+
+        <div id="panel-intake" class="panel off" aria-hidden="true">
+
+            <div class="progress-wrap">
+                <p id="step-label" class="step-label" aria-live="polite">Step 1 of 7</p>
+                <div class="progress"
+                     role="progressbar"
+                     aria-label="Intake progress"
+                     aria-valuemin="1"
+                     aria-valuemax="7"
+                     aria-valuenow="1"
+                     aria-valuetext="Step 1 of 7: Operational visibility"
+                     id="intake-progress">
+                    <div class="seg" id="seg-1" aria-hidden="true"></div>
+                    <div class="seg" id="seg-2" aria-hidden="true"></div>
+                    <div class="seg" id="seg-3" aria-hidden="true"></div>
+                    <div class="seg" id="seg-4" aria-hidden="true"></div>
+                    <div class="seg" id="seg-5" aria-hidden="true"></div>
+                    <div class="seg" id="seg-6" aria-hidden="true"></div>
+                    <div class="seg" id="seg-7" aria-hidden="true"></div>
+                </div>
+            </div>
+
+            <div class="step on" id="s1" data-step="1">
+                <h3 class="step-q" id="q1" tabindex="-1">Operational visibility?</h3>
+                <div role="radiogroup" aria-labelledby="q1">
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="corp">Corporate Governance</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="pub">Public Exposure Footprint</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="cap">Capital Architecture</button>
+                </div>
+                <input type="hidden" id="a1" value="">
+                <div class="nav">
+                    <span aria-hidden="true"></span>
+                    <button type="button" class="nav-btn go" data-next="2" disabled>Proceed →</button>
+                </div>
+            </div>
+
+            <div class="step" id="s2" data-step="2">
+                <h3 class="step-q" id="q2" tabindex="-1">Where does weight concentrate?</h3>
+                <div role="radiogroup" aria-labelledby="q2">
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="fatigue">Executive Fatigue</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="stigma">Isolation Stigma</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="crisis">Crisis Containment</button>
+                </div>
+                <input type="hidden" id="a2" value="">
+                <div class="nav">
+                    <button type="button" class="nav-btn" data-prev="1">← Back</button>
+                    <button type="button" class="nav-btn go" data-next="3" disabled>Proceed →</button>
+                </div>
+            </div>
+
+            <div class="step" id="s3" data-step="3">
+                <h3 class="step-q" id="q3" tabindex="-1">Structural access point?</h3>
+                <div role="radiogroup" aria-labelledby="q3">
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="lounge">The Café Lounge</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="mobile">Mobile Sanctuary Concierge</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="digital">Encrypted Digital Node</button>
+                </div>
+                <input type="hidden" id="a3" value="">
+                <div class="nav">
+                    <button type="button" class="nav-btn" data-prev="2">← Back</button>
+                    <button type="button" class="nav-btn go" data-next="4" disabled>Proceed →</button>
+                </div>
+            </div>
+
+            <div class="step" id="s4" data-step="4">
+                <h3 class="step-q" id="q4" tabindex="-1">What creates the most pressure today?</h3>
+                <div role="radiogroup" aria-labelledby="q4">
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="leadership">Leadership responsibilities</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="visibility">Public visibility</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="financial">Financial decisions</button>
+                </div>
+                <input type="hidden" id="a4" value="">
+                <div class="nav">
+                    <button type="button" class="nav-btn" data-prev="3">← Back</button>
+                    <button type="button" class="nav-btn go" data-next="5" disabled>Proceed →</button>
+                </div>
+            </div>
+
+            <div class="step" id="s5" data-step="5">
+                <h3 class="step-q" id="q5" tabindex="-1">What would bring the greatest relief?</h3>
+                <div role="radiogroup" aria-labelledby="q5">
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="clarity">Strategic clarity</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="support">Confidential support</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="space">Protected thinking space</button>
+                </div>
+                <input type="hidden" id="a5" value="">
+                <div class="nav">
+                    <button type="button" class="nav-btn" data-prev="4">← Back</button>
+                    <button type="button" class="nav-btn go" data-next="6" disabled>Proceed →</button>
+                </div>
+            </div>
+
+            <div class="step" id="s6" data-step="6">
+                <h3 class="step-q" id="q6" tabindex="-1">How would you prefer to begin?</h3>
+                <div role="radiogroup" aria-labelledby="q6">
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="call">Private conversation</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="written">Written exchange first</button>
+                </div>
+                <input type="hidden" id="a6" value="">
+                <div class="nav">
+                    <button type="button" class="nav-btn" data-prev="5">← Back</button>
+                    <button type="button" class="nav-btn go" data-next="7" disabled>Proceed →</button>
+                </div>
+            </div>
+
+            <div class="step" id="s7" data-step="7">
+                <h3 class="step-q" id="q7" tabindex="-1">Establish Designation</h3>
+
+                <!-- Production honeypot: hidden from users; backend must reject if filled -->
+                <div class="hp-field" aria-hidden="true">
+                    <label for="a7_website">Website</label>
+                    <input type="text" id="a7_website" name="website" tabindex="-1" autocomplete="off">
+                </div>
+
+                <div class="input-group">
+                    <label for="a7_name">Preferred Name or Designation</label>
+                    <input type="text" id="a7_name" class="text-input"
+                           placeholder="Full name or alias"
+                           autocomplete="name"
+                           required minlength="2"
+                           aria-describedby="name-hint name-error">
+                    <p id="name-hint" class="input-hint">At least two characters — full name or professional alias</p>
+                    <div id="name-error" class="input-error" role="alert">Please enter a valid name or designation (letters, spaces, hyphens)</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="a7_contact">Secure Contact</label>
+                    <input type="text" id="a7_contact" class="text-input"
+                           placeholder="Email or phone"
+                           autocomplete="email"
+                           inputmode="email"
+                           required
+                           aria-describedby="contact-error">
+                    <div id="contact-error" class="input-error" role="alert">Please provide a valid email or phone number</div>
+                </div>
+
+                <div class="nav">
+                    <button type="button" class="nav-btn" data-prev="6">← Back</button>
+                    <button type="button" class="nav-btn go" id="btn-transmit" disabled>Transmit →</button>
+                </div>
+
+                <p class="production-note" id="production-note">
+                    Secured via ECDH key agreement with the Phare registry API on Cloudflare.
+                </p>
+                <p id="transmit-error" class="status-banner" role="alert"></p>
+            </div>
+
+        </div>
+
+        <div id="panel-success" class="panel off" aria-hidden="true">
+            <div class="success-beacon" aria-hidden="true">
+                <span class="sb-ring"></span>
+                <span class="sb-ring"></span>
+            </div>
+            <div id="success-confetti" class="success-confetti" aria-hidden="true"></div>
+            <span class="success-mark">Phare — The Lighthouse</span>
+            <p class="success-body">
+                Your coordinates have been received<br>
+                under zero-retention parameters.<br><br>
+                If alignment confirms, a path<br>
+                will open — through the<br>
+                quietest channels.
+            </p>
+
+            <p class="encryption-note" id="encryption-note">
+                Intake encrypted client-side via ECDH + AES-256-GCM before transmission<br>
+                to the Phare registry API. Zero-retention enforced server-side.
+            </p>
+
+            <div class="secure-actions">
+                <button type="button" class="secure-btn" id="btn-copy-payload" disabled>
+                    Copy AES-256-GCM encrypted payload
+                </button>
+                <button type="button" class="secure-btn" id="btn-open-channel" disabled>
+                    Open secure transmission channel
+                </button>
+                <!-- demo-only button removed for production build -->
+            </div>
+        </div>
+
+        <div class="utility-bar">
+            <button type="button" class="clear-data-btn" id="btn-clear-data">Clear data on this device</button>
+        </div>
+
+    </section>
+
+</main>
+
+<div id="restore-dialog" class="restore-dialog" role="dialog" aria-modal="true" aria-labelledby="restore-title" aria-hidden="true">
+    <div class="restore-card">
+        <h2 id="restore-title">Restore previous draft?</h2>
+        <p>A device-encrypted draft from a prior session was found. Restore your progress, or begin fresh.</p>
+        <div class="restore-actions">
+            <button type="button" class="nav-btn" id="btn-restore-decline">Begin fresh</button>
+            <button type="button" class="cta" id="btn-restore-accept" style="margin-top:0;">Restore draft</button>
+        </div>
+    </div>
+</div>
+
+<div id="clear-data-dialog" class="restore-dialog" role="dialog" aria-modal="true" aria-labelledby="clear-data-title" aria-hidden="true">
+    <div class="restore-card">
+        <h2 id="clear-data-title">Clear data on this device?</h2>
+        <p>This removes any saved draft and encryption keys stored locally in this browser. Your current session will reload.</p>
+        <div class="restore-actions">
+            <button type="button" class="nav-btn" id="btn-clear-cancel">Cancel</button>
+            <button type="button" class="cta" id="btn-clear-confirm" style="margin-top:0;">Clear &amp; reload</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    /* ── PHARE PRODUCTION (single canonical source for GitHub Pages) ──────
+     * Deploy: copy/replace this entire file as index.html in your
+     * phare-registry/ repo → git push → GitHub Pages (source: main / root).
+     *
+     * BEFORE DEPLOY: Replace the two worker URLs below with your deployed
+     * Cloudflare Worker origin (e.g. https://phare-intake.xxx.workers.dev).
+     *
+     * Custom domain + Cloudflare proxy recommended for full CSP/HSTS.
+     * This file contains ONLY the production ECDH path. No demo code.
+     * ─────────────────────────────────────────────────────────────────── */
+    const CONFIG = Object.freeze({
+        API_URL: 'https://phare-intake.YOUR_SUBDOMAIN.workers.dev/api/intake',
+        PUBKEY_URL: 'https://phare-intake.YOUR_SUBDOMAIN.workers.dev/api/intake/pubkey',
+        REGISTRY_EMAIL: 'registry@phare.lighthouse'
+    });
+
+    /* === 10/10 internal version (exposed for operators / debugging, no UI impact) === */
+    const PHARE_VERSION = '2026.06-evenmore';
+
+    /*
+     * PRODUCTION HARDENING (GitHub Pages host + Cloudflare Worker API):
+     *
+     * 1. Content-Security-Policy — serve with a strict CSP on your host, e.g.
+     *    Netlify _headers or Cloudflare transform rules:
+     *
+     *    Content-Security-Policy: default-src 'self';
+     *      script-src 'self' 'unsafe-inline';
+     *      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+     *      font-src https://fonts.gstatic.com;
+     *      img-src 'self' data:;
+     *      connect-src 'self' https://phare-intake.YOUR_SUBDOMAIN.workers.dev;
+     *      frame-ancestors 'none'; base-uri 'self'; form-action 'none'
+     *
+     *    This single-file build uses inline script/style; prefer nonces or a
+     *    build step that externalizes assets before dropping 'unsafe-inline'.
+     *
+     * 2. Honeypot — #a7_website is visually hidden. Reject submissions where
+     *    it is non-empty (client guard in submitToAPI; server must enforce too).
+     *
+     * 3. Rate limiting — enforce at POST /api/intake (e.g. 5 req/IP/hour via
+     *    Cloudflare, API gateway, or express-rate-limit on the intake handler).
+     *
+     * 4. Timeouts & resilience — all outbound fetches use fetchWithTimeout
+     *    (AbortController + 15-20s) to prevent hanging on bad networks.
+     *
+     * 5. Client-side attempt tracking — noteTransmitAttempt() provides
+     *    contextual messaging for repeated failures without new UI.
+     */
+
+    /**
+     * @param {string} id
+     * @returns {HTMLElement|null}
+     */
+    const el = id => document.getElementById(id);
+    const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
+
+    // Pre-cache a few hot elements for minor perf (non-visual)
+    // This reduces repeated getElementById in the wizard hot path and transmit.
+    // See also: note in PERFORMANCE section of comments.
+    let cachedProgress, cachedStepLabel, cachedTransmitBtn, cachedNameInput, cachedContactInput;
+
+    /* === Resilience helper (AbortController + timeout, non-visual) === */
+    async function fetchWithTimeout(resource, options = {}, timeoutMs = 15000) {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            const response = await fetch(resource, { ...options, signal: controller.signal });
+            clearTimeout(id);
+            return response;
+        } catch (err) {
+            clearTimeout(id);
+            if (err.name === 'AbortError') {
+                throw new Error('Request timed out. Please check your connection or the registry endpoint.');
+            }
+            throw err;
+        }
+    }
+
+    /* === Simple client-side attempt tracker for calmer messaging (session only) === */
+    function noteTransmitAttempt() {
+        try {
+            const key = 'phare_tx_attempts';
+            const now = Date.now();
+            let data = JSON.parse(sessionStorage.getItem(key) || '{"count":0,"last":0}');
+            if (now - data.last > 60000) data.count = 0; // reset after ~1min
+            data.count++;
+            data.last = now;
+            sessionStorage.setItem(key, JSON.stringify(data));
+            return data.count;
+        } catch (_) { return 1; }
+    }
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let prefersReducedMotion = motionQuery.matches;
+    const DRAFT_KEY = 'phare_intake_draft_v2';
+    const DEVICE_KEY = 'phare_device_key_v2';
+    const DRAFT_TTL_MS = 1000 * 60 * 60 * 4;
+
+    const STEP_LABELS = {
+        1: 'Step 1 of 7: Operational visibility',
+        2: 'Step 2 of 7: Where does weight concentrate',
+        3: 'Step 3 of 7: Structural access point',
+        4: 'Step 4 of 7: What creates the most pressure today',
+        5: 'Step 5 of 7: What would bring the greatest relief',
+        6: 'Step 6 of 7: How would you prefer to begin',
+        7: 'Step 7 of 7: Establish designation'
+    };
+
+    let lastIntakeData = null;
+    let lastEncryptedPayload = null;
+    let isProcessingCrypto = false;
+    let draftSaveTimer = null;
+    let pendingDraft = null;
+    let hasTransmitted = false;
+    let customCursorInitialized = false;
+
+    /* === 3. CRYPTO (Drafts via inline Worker + ECDH for real registry intake) === */
+    const cryptoWorkerCode = `
+        function uint8ArrayToBase64(bytes) {
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+            return btoa(binary);
+        }
+        function base64ToUint8Array(base64) {
+            const binary = atob(base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            return bytes;
+        }
+        async function getKeyMaterial(passphrase) {
+            const enc = new TextEncoder();
+            return crypto.subtle.importKey('raw', enc.encode(passphrase), { name: 'PBKDF2' }, false, ['deriveBits', 'deriveKey']);
+        }
+        async function deriveAESKey(passphrase, salt) {
+            const keyMaterial = await getKeyMaterial(passphrase);
+            return crypto.subtle.deriveKey(
+                { name: 'PBKDF2', salt, iterations: 120000, hash: 'SHA-256' },
+                keyMaterial,
+                { name: 'AES-GCM', length: 256 },
+                false,
+                ['encrypt', 'decrypt']
+            );
+        }
+        self.onmessage = async function (e) {
+            const { action, payload, passphrase, id } = e.data;
+            try {
+                if (action === 'encrypt') {
+                    const salt = crypto.getRandomValues(new Uint8Array(16));
+                    const iv = crypto.getRandomValues(new Uint8Array(12));
+                    const key = await deriveAESKey(passphrase, salt);
+                    const plaintext = new TextEncoder().encode(JSON.stringify(payload));
+                    const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plaintext);
+                    self.postMessage({ id, success: true, result: {
+                        salt: uint8ArrayToBase64(salt),
+                        iv: uint8ArrayToBase64(iv),
+                        ciphertext: uint8ArrayToBase64(new Uint8Array(ciphertext))
+                    }});
+                } else if (action === 'decrypt') {
+                    const salt = base64ToUint8Array(payload.salt);
+                    const iv = base64ToUint8Array(payload.iv);
+                    const ct = base64ToUint8Array(payload.ciphertext);
+                    const key = await deriveAESKey(passphrase, salt);
+                    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
+                    self.postMessage({ id, success: true, result: JSON.parse(new TextDecoder().decode(decrypted)) });
+                }
+            } catch (err) {
+                self.postMessage({ id, success: false, error: err.message });
+            }
+        };
+    `;
+
+    const workerBlobUrl = URL.createObjectURL(new Blob([cryptoWorkerCode], { type: 'application/javascript' }));
+    const cryptoWorker = new Worker(workerBlobUrl);
+    let workerCallId = 0;
+    const pendingResolvers = new Map();
+    let lastFocusedBeforeModal = null;
+
+    cryptoWorker.onmessage = function (e) {
+        const { id, success, result, error } = e.data;
+        const pending = pendingResolvers.get(id);
+        if (!pending) return;
+        pendingResolvers.delete(id);
+        success ? pending.resolve(result) : pending.reject(new Error(error));
+    };
+
+    function runCryptoTask(action, payload, passphrase) {
+        return new Promise((resolve, reject) => {
+            const id = ++workerCallId;
+            pendingResolvers.set(id, { resolve, reject });
+            cryptoWorker.postMessage({ id, action, payload, passphrase });
+        });
+    }
+
+    function getDeviceKey() {
+        let key = localStorage.getItem(DEVICE_KEY);
+        if (!key) {
+            key = crypto.randomUUID();
+            localStorage.setItem(DEVICE_KEY, key);
+        }
+        return key;
+    }
+
+    /* === 4. DRAFT MANAGER (device-local, best-effort, uses worker above) === */
+    /* NOTE: Drafts are encrypted with a random UUID stored in clear localStorage.
+       This protects against casual local inspection only. For maximum privacy,
+       complete the intake in a single session and clear data afterwards. */
+    const DraftManager = {
+        async save(draftObj) {
+            try {
+                const envelope = await runCryptoTask('encrypt', { ...draftObj, timestamp: Date.now() }, getDeviceKey());
+                localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: 2, ...envelope }));
+                showDraftIndicator();
+            } catch (_) {
+                /* silent — draft persistence is best-effort */
+            }
+        },
+        async load() {
+            try {
+                const raw = localStorage.getItem(DRAFT_KEY);
+                if (!raw) return null;
+                const envelope = JSON.parse(raw);
+                if (!envelope?.ciphertext) return null;
+                const draft = await runCryptoTask('decrypt', envelope, getDeviceKey());
+                if (!draft?.timestamp || Date.now() - draft.timestamp > DRAFT_TTL_MS) {
+                    DraftManager.clear();
+                    return null;
+                }
+                return draft;
+            } catch (_) {
+                DraftManager.clear();
+                return null;
+            }
+        },
+        clear() {
+            localStorage.removeItem(DRAFT_KEY);
+            const indicator = el('draft-indicator');
+            if (indicator) indicator.classList.remove('show');
+        }
+    };
+
+    function resetAnimation(element) {
+        element.style.animation = 'none';
+        element.offsetHeight;
+        element.style.animation = '';
+    }
+
+    function showDraftIndicator(immediate = false) {
+        const indicator = el('draft-indicator');
+        if (!indicator) return;
+        indicator.classList.add('show');
+        if (!immediate) setTimeout(() => indicator.classList.remove('show'), 2200);
+    }
+
+    function setPanelVisibility(panelId, visible) {
+        const panel = el(panelId);
+        if (!panel) return;
+        panel.classList.toggle('off', !visible);
+        panel.setAttribute('aria-hidden', visible ? 'false' : 'true');
+        if (visible) panel.removeAttribute('tabindex');
+    }
+
+    function fade(outId, inId) {
+        const out = el(outId);
+        const incoming = el(inId);
+        resetAnimation(out);
+        setPanelVisibility(outId, false);
+        setPanelVisibility(inId, true);
+        resetAnimation(incoming);
+        clearCursorHover();
+    }
+
+    function clearCursorHover() {
+        el('cur-dot')?.classList.remove('hov');
+        el('cur-ring')?.classList.remove('hov');
+    }
+
+    function setProgress(step) {
+        // Use cached refs when available (perf)
+        const progressEl = cachedProgress || el('intake-progress');
+        const stepLabel = cachedStepLabel || el('step-label');
+        if (progressEl) {
+            progressEl.setAttribute('aria-valuenow', step);
+            progressEl.setAttribute('aria-valuetext', STEP_LABELS[step] || `Step ${step} of 7`);
+        }
+        if (stepLabel) {
+            stepLabel.textContent = `Step ${step} of 7`;
+            // Non-visual a11y: the step-label already has aria-live=polite from markup.
+            // Explicitly ensure screen readers get the full context on change.
+            stepLabel.setAttribute('aria-label', `Current step: ${STEP_LABELS[step] || `Step ${step} of 7`}`);
+        }
+        for (let i = 1; i <= 7; i++) {
+            const seg = el('seg-' + i);
+            if (!seg) continue;
+            seg.classList.remove('lit', 'active');
+            if (i < step) seg.classList.add('lit');
+            if (i === step) seg.classList.add('active');
+        }
+    }
+
+    function getCurrentStep() {
+        const active = document.querySelector('.step.on');
+        return active ? parseInt(active.dataset.step, 10) || 1 : 1;
+    }
+
+    function collectDraft() {
+        return {
+            step: getCurrentStep(),
+            a1: el('a1')?.value || '',
+            a2: el('a2')?.value || '',
+            a3: el('a3')?.value || '',
+            a4: el('a4')?.value || '',
+            a5: el('a5')?.value || '',
+            a6: el('a6')?.value || '',
+            a7_name: el('a7_name')?.value.trim() || '',
+            a7_contact: el('a7_contact')?.value.trim() || ''
+        };
+    }
+
+    function queueDraftSave() {
+        clearTimeout(draftSaveTimer);
+        draftSaveTimer = setTimeout(() => DraftManager.save(collectDraft()), 450);
+    }
+
+    function restorePick(stepId, value) {
+        const step = el(stepId);
+        if (!step) return;
+        step.querySelectorAll('.opt').forEach(opt => {
+            const selected = opt.dataset.value === value;
+            opt.classList.toggle('chosen', selected);
+            opt.setAttribute('aria-checked', selected ? 'true' : 'false');
+        });
+    }
+
+    function updateGoButton(stepEl) {
+        const hidden = stepEl.querySelector('input[type="hidden"]');
+        const goBtn = stepEl.querySelector('.nav-btn.go');
+        if (!goBtn || !hidden) return;
+        const ready = Boolean(hidden.value);
+        goBtn.classList.toggle('ready', ready);
+        goBtn.disabled = !ready;
+    }
+
+    function restoreDraft(draft) {
+        if (!draft) return;
+        ['a1', 'a2', 'a3', 'a4', 'a5', 'a6'].forEach(key => {
+            if (draft[key]) {
+                el(key).value = draft[key];
+                restorePick('s' + key.slice(1), draft[key]);
+            }
+        });
+        if (draft.a7_name) el('a7_name').value = draft.a7_name;
+        if (draft.a7_contact) el('a7_contact').value = draft.a7_contact;
+
+        const targetStep = Math.min(Math.max(draft.step || 1, 1), 7);
+        document.querySelectorAll('.step').forEach(step => step.classList.remove('on', 'reverse'));
+        const targetEl = el('s' + targetStep);
+        if (targetEl) {
+            targetEl.classList.add('on');
+            setProgress(targetStep);
+            updateGoButton(targetEl);
+            if (targetStep === 7) checkInputs();
+            else targetEl.querySelector('.step-q')?.focus();
+        }
+        showDraftIndicator(true);
+    }
+
+    function getFocusableElements(container) {
+        return Array.from(container.querySelectorAll(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )).filter(node => node.offsetParent !== null || node === document.activeElement);
+    }
+
+    function attachFocusTrap(container, onEscape) {
+        const handleKeydown = e => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                onEscape?.();
+                return;
+            }
+            if (e.key !== 'Tab') return;
+            const focusable = getFocusableElements(container);
+            if (!focusable.length) return;
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        };
+        container.addEventListener('keydown', handleKeydown);
+        return () => container.removeEventListener('keydown', handleKeydown);
+    }
+
+    let detachRestoreTrap = null;
+    let detachClearTrap = null;
+
+    function applyMotionPreference() {
+        prefersReducedMotion = motionQuery.matches;
+        document.body.classList.toggle('reduce-motion', prefersReducedMotion);
+    }
+
+    function showRestoreDialog(draft) {
+        pendingDraft = draft;
+        const dialog = el('restore-dialog');
+        const card = dialog?.querySelector('.restore-card');
+        dialog.classList.add('open');
+        dialog.setAttribute('aria-hidden', 'false');
+        lastFocusedBeforeModal = document.activeElement;
+        if (detachRestoreTrap) detachRestoreTrap();
+        if (card) {
+            detachRestoreTrap = attachFocusTrap(card, () => {
+                DraftManager.clear();
+                hideRestoreDialog();
+            });
+        }
+        el('btn-restore-accept')?.focus();
+    }
+
+    function hideRestoreDialog() {
+        const dialog = el('restore-dialog');
+        dialog.classList.remove('open');
+        dialog.setAttribute('aria-hidden', 'true');
+        pendingDraft = null;
+        if (detachRestoreTrap) {
+            detachRestoreTrap();
+            detachRestoreTrap = null;
+        }
+        if (lastFocusedBeforeModal?.focus) {
+            lastFocusedBeforeModal.focus();
+            lastFocusedBeforeModal = null;
+        }
+    }
+
+    function showClearDataDialog() {
+        const dialog = el('clear-data-dialog');
+        const card = dialog?.querySelector('.restore-card');
+        dialog.classList.add('open');
+        dialog.setAttribute('aria-hidden', 'false');
+        lastFocusedBeforeModal = document.activeElement;
+        if (detachClearTrap) detachClearTrap();
+        if (card) {
+            detachClearTrap = attachFocusTrap(card, hideClearDataDialog);
+        }
+        el('btn-clear-confirm')?.focus();
+    }
+
+    function hideClearDataDialog() {
+        const dialog = el('clear-data-dialog');
+        dialog.classList.remove('open');
+        dialog.setAttribute('aria-hidden', 'true');
+        if (detachClearTrap) {
+            detachClearTrap();
+            detachClearTrap = null;
+        }
+        if (lastFocusedBeforeModal?.focus) {
+            lastFocusedBeforeModal.focus();
+            lastFocusedBeforeModal = null;
+        }
+    }
+
+    function showStep(fromStep, toStep, reverse) {
+        const fromEl = el('s' + fromStep);
+        const toEl = el('s' + toStep);
+        fromEl.classList.remove('on', 'reverse');
+        resetAnimation(toEl);
+        toEl.classList.toggle('reverse', reverse);
+        toEl.classList.add('on');
+        updateGoButton(toEl);
+        if (toStep === 7) checkInputs();
+        toEl.querySelector('.step-q')?.focus();
+        clearCursorHover();
+        if (!reverse) queueDraftSave();
+    }
+
+    function isValidContact(str) {
+        if (!str || str.trim().length < 5) return false;
+        return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(str.trim()) ||
+               /^[\d\s\-\+\(\)\.]{7,25}$/.test(str.trim());
+    }
+
+    function isValidName(str) {
+        if (!str) return false;
+        const val = str.trim();
+        return val.length >= 2 && /^(?=.*[A-Za-zÀ-ÿ])[A-Za-zÀ-ÿ\s'.-]{2,}$/.test(val);
+    }
+
+    function validateNameField() {
+        const input = el('a7_name');
+        const error = el('name-error');
+        if (!input || !error) return true;
+        const val = input.value.trim();
+        if (!val) {
+            input.classList.remove('invalid');
+            error.classList.remove('show');
+            return true;
+        }
+        const valid = isValidName(val);
+        input.classList.toggle('invalid', !valid);
+        error.classList.toggle('show', !valid);
+        return valid;
+    }
+
+    function validateContactField() {
+        const input = el('a7_contact');
+        const error = el('contact-error');
+        if (!input || !error) return true;
+        const val = input.value.trim();
+        if (!val) {
+            input.classList.remove('invalid');
+            error.classList.remove('show');
+            return true;
+        }
+        const valid = isValidContact(val);
+        input.classList.toggle('invalid', !valid);
+        error.classList.toggle('show', !valid);
+        return valid;
+    }
+
+    function checkInputs() {
+        // Use cached inputs when available (perf + consistency)
+        const btn = cachedTransmitBtn || el('btn-transmit');
+        const nameInput = cachedNameInput || el('a7_name');
+        const contactInput = cachedContactInput || el('a7_contact');
+        const nameOk = isValidName(nameInput.value);
+        const contactOk = isValidContact(contactInput.value.trim());
+        const ready = nameOk && contactOk;
+        btn.classList.toggle('ready', ready);
+        btn.disabled = !ready;
+        if (ready) {
+            nameInput.classList.remove('invalid');
+            el('name-error').classList.remove('show');
+            contactInput.classList.remove('invalid');
+            el('contact-error').classList.remove('show');
+        }
+        return ready;
+    }
+
+    function playSuccessCelebration() {
+        const panel = el('panel-success');
+        if (!panel) return;
+
+        if (prefersReducedMotion) {
+            panel.classList.add('celebrate-static');
+            setTimeout(() => panel.classList.remove('celebrate-static'), 1200);
+            return;
+        }
+
+        const container = el('success-confetti');
+        if (container) {
+            container.innerHTML = '';
+            for (let i = 0; i < 8; i++) {
+                const piece = document.createElement('span');
+                piece.className = 'confetti-piece';
+                piece.style.setProperty('--x', `${18 + Math.random() * 64}%`);
+                piece.style.setProperty('--r', `${Math.random() * 360}deg`);
+                piece.style.setProperty('--d', `${Math.random() * 0.25}s`);
+                piece.style.opacity = String(0.12 + Math.random() * 0.18);
+                container.appendChild(piece);
+            }
+        }
+
+        panel.classList.remove('celebrate');
+        panel.offsetHeight;
+        panel.classList.add('celebrate');
+        setTimeout(() => {
+            panel.classList.remove('celebrate');
+            if (container) container.innerHTML = '';
+        }, 2800);
+    }
+
+    function setTransmitError(message) {
+        const banner = el('transmit-error');
+        if (!banner) return;
+        if (message) {
+            banner.textContent = message;
+            banner.classList.add('show');
+        } else {
+            banner.textContent = '';
+            banner.classList.remove('show');
+        }
+    }
+
+    function setSuccessActionsEnabled(enabled, options = {}) {
+        const { hideTransmit = false } = options;
+        const copyBtn = el('btn-copy-payload');
+        const openBtn = el('btn-open-channel');
+        const decryptBtn = el('btn-demo-decrypt');
+
+        if (copyBtn) copyBtn.disabled = !enabled;
+        if (decryptBtn) decryptBtn.disabled = !enabled;
+
+        if (openBtn) {
+            if (hideTransmit) {
+                openBtn.classList.add('transmitted-hidden');
+                openBtn.disabled = true;
+            } else {
+                openBtn.classList.remove('transmitted-hidden');
+                openBtn.disabled = !enabled;
+            }
+        }
+    }
+
+    function getEncryptedPayloadString() {
+        if (!lastEncryptedPayload) return null;
+        return btoa(JSON.stringify(lastEncryptedPayload));
+    }
+
+    async function copyText(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } catch (_) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'fixed';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            const ok = document.execCommand('copy');
+            document.body.removeChild(textarea);
+            return ok;
+        }
+    }
+
+    function closeModal(overlay) {
+        overlay.remove();
+        if (lastFocusedBeforeModal?.focus) {
+            lastFocusedBeforeModal.focus();
+            lastFocusedBeforeModal = null;
+        }
+    }
+
+    function openModal(title, content, note) {
+        const existing = el('phare-verification-modal');
+        if (existing) existing.remove();
+
+        lastFocusedBeforeModal = document.activeElement;
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.id = 'phare-verification-modal';
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-modal', 'true');
+        overlay.setAttribute('aria-labelledby', 'phare-modal-title');
+
+        const card = document.createElement('div');
+        card.className = 'modal-card';
+
+        const heading = document.createElement('div');
+        heading.className = 'modal-title';
+        heading.id = 'phare-modal-title';
+        heading.textContent = title;
+
+        const pre = document.createElement('pre');
+        pre.className = 'modal-pre';
+        pre.textContent = content;
+
+        const footer = document.createElement('div');
+        footer.className = 'modal-footer';
+
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'modal-close';
+        closeBtn.textContent = 'Close';
+        closeBtn.addEventListener('click', () => closeModal(overlay));
+
+        footer.appendChild(closeBtn);
+        card.appendChild(heading);
+        card.appendChild(pre);
+        if (note) {
+            const noteEl = document.createElement('p');
+            noteEl.className = 'modal-note';
+            noteEl.textContent = note;
+            card.appendChild(noteEl);
+        }
+        card.appendChild(footer);
+        overlay.appendChild(card);
+
+        attachFocusTrap(card, () => closeModal(overlay));
+        document.body.appendChild(overlay);
+        closeBtn.focus();
+    }
+
+    async function submitToAPI(encryptedPayload) {
+        /* Honeypot: bots often fill hidden fields — server must reject too */
+        if (el('a7_website')?.value.trim()) {
+            throw new Error('Invalid submission');
+        }
+
+        const response = await fetchWithTimeout(CONFIG.API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({
+                ...encryptedPayload,
+                website: el('a7_website')?.value || ''
+            })
+        }, 20000);
+        if (response.status === 429) throw new Error('Server responded 429');
+        if (!response.ok) throw new Error(`Server responded ${response.status}`);
+        return response.json().catch(() => ({}));
+    }
+
+    // applyDemoMode removed — this is the pure production build (ECDH only).
+    // All UI text for production is already present in the static markup.
+
+    function uint8ToBase64(bytes) {
+        let binary = '';
+        for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+        return btoa(binary);
+    }
+
+    /* === 3b. PRODUCTION ECDH HELPERS (the real registry encryption path) === */
+    async function generateECDHKeyPair() {
+        return crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveKey', 'deriveBits']);
+    }
+
+    async function deriveSharedAESKey(privateKey, peerPublicKey) {
+        return crypto.subtle.deriveKey(
+            { name: 'ECDH', public: peerPublicKey },
+            privateKey,
+            { name: 'AES-GCM', length: 256 },
+            false,
+            ['encrypt', 'decrypt']
+        );
+    }
+
+    /**
+     * Fetch the registry's current public ECDH key (P-256 JWK).
+     * Uses short timeout and no-store to ensure freshness.
+     * @returns {Promise<CryptoKey>} public key for derive
+     */
+    async function fetchRegistryPublicKey() {
+        const res = await fetchWithTimeout(CONFIG.PUBKEY_URL, {
+            headers: { Accept: 'application/json' },
+            cache: 'no-store'
+        }, 15000);
+        if (!res.ok) throw new Error('Could not reach registry key endpoint');
+        const data = await res.json();
+        return crypto.subtle.importKey(
+            'jwk',
+            data.publicKey,
+            { name: 'ECDH', namedCurve: 'P-256' },
+            true,
+            ['deriveKey']
+        );
+    }
+
+    /**
+     * Core production encryption path.
+     * 1. Fetch registry pubkey
+     * 2. Generate ephemeral client keypair
+     * 3. ECDH derive shared AES-GCM key
+     * 4. Encrypt payload + random IV
+     * Returns the exact shape the Worker expects and validatePayload accepts.
+     * @param {object} payload - the intake data
+     */
+    async function encryptForRegistry(payload) {
+        const registryPub = await fetchRegistryPublicKey();
+        const ephemeral = await generateECDHKeyPair();
+        const sharedKey = await deriveSharedAESKey(ephemeral.privateKey, registryPub);
+        const ephemeralPublicKey = await crypto.subtle.exportKey('jwk', ephemeral.publicKey);
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const ciphertext = await crypto.subtle.encrypt(
+            { name: 'AES-GCM', iv },
+            sharedKey,
+            new TextEncoder().encode(JSON.stringify(payload))
+        );
+        return {
+            v: 'phare-aes-gcm-ecdh-v2',
+            ephemeralPublicKey,
+            iv: uint8ToBase64(iv),
+            ciphertext: uint8ToBase64(new Uint8Array(ciphertext))
+        };
+    }
+
+    function initCustomCursor() {
+        if (!hasFinePointer || prefersReducedMotion || customCursorInitialized) return;
+        customCursorInitialized = true;
+        document.body.classList.add('has-custom-cursor');
+        const dot = el('cur-dot');
+        const ring = el('cur-ring');
+        let ringX = 0, ringY = 0, dotX = 0, dotY = 0;
+        let cursorInitialized = false;
+
+        document.addEventListener('mousemove', e => {
+            if (!cursorInitialized) {
+                dot.style.opacity = '0.85';
+                ring.style.opacity = '1';
+                cursorInitialized = true;
+            }
+            dotX = e.clientX;
+            dotY = e.clientY;
+            dot.style.left = dotX + 'px';
+            dot.style.top = dotY + 'px';
+
+            const hoverTarget = e.target.closest('button, .opt, .cta, .nav-btn, .secure-btn, .text-input');
+            const interactive = hoverTarget && getComputedStyle(hoverTarget).pointerEvents !== 'none';
+            dot.classList.toggle('hov', interactive);
+            ring.classList.toggle('hov', interactive);
+        });
+
+        (function trackRing() {
+            ringX += (dotX - ringX) * 0.14;
+            ringY += (dotY - ringY) * 0.14;
+            ring.style.left = ringX + 'px';
+            ring.style.top = ringY + 'px';
+            requestAnimationFrame(trackRing);
+        })();
+
+        document.addEventListener('mouseleave', () => {
+            dot.classList.add('cur-hidden');
+            ring.classList.add('cur-hidden');
+        });
+        document.addEventListener('mouseenter', () => {
+            if (cursorInitialized) {
+                dot.classList.remove('cur-hidden');
+                ring.classList.remove('cur-hidden');
+            }
+        });
+
+        if (!prefersReducedMotion) {
+            const leftCol = el('col-left');
+            const ghostP = document.querySelector('.ghost-p');
+            leftCol.addEventListener('mousemove', e => {
+                const r = leftCol.getBoundingClientRect();
+                const x = (e.clientX - r.left) / r.width - 0.5;
+                const y = (e.clientY - r.top) / r.height - 0.5;
+                /* Parallax on decorative ghost only — never transform readable hero copy */
+                if (ghostP) {
+                    ghostP.style.transform = `translate(${Math.round(x * 14)}px, ${Math.round(y * 10)}px)`;
+                }
+            });
+            leftCol.addEventListener('mouseleave', () => {
+                if (ghostP) ghostP.style.transform = 'translate(0, 0)';
+            });
+        }
+    }
+
+    function dismissInitLoader() {
+        const loader = el('init-loader');
+        if (!loader) return;
+        loader.classList.add('done');
+        loader.setAttribute('aria-hidden', 'true');
+    }
+
+    function clearAllLocalData() {
+        DraftManager.clear();
+        localStorage.removeItem(DEVICE_KEY);
+        lastIntakeData = null;
+        lastEncryptedPayload = null;
+    }
+
+    function initKeyboardNavigation() {
+        document.querySelectorAll('.step[data-step]').forEach(stepEl => {
+            const radiogroup = stepEl.querySelector('[role="radiogroup"]');
+            if (!radiogroup) return;
+            const options = Array.from(radiogroup.querySelectorAll('.opt'));
+            const inputId = 'a' + stepEl.dataset.step;
+
+            options.forEach((opt, index) => {
+                opt.setAttribute('tabindex', index === 0 ? '0' : '-1');
+                opt.addEventListener('keydown', e => {
+                    let newIndex = options.indexOf(opt);
+                    switch (e.key) {
+                        case 'ArrowDown':
+                        case 'ArrowRight':
+                            e.preventDefault();
+                            newIndex = (newIndex + 1) % options.length;
+                            break;
+                        case 'ArrowUp':
+                        case 'ArrowLeft':
+                            e.preventDefault();
+                            newIndex = (newIndex - 1 + options.length) % options.length;
+                            break;
+                        case 'Home':
+                            e.preventDefault();
+                            newIndex = 0;
+                            break;
+                        case 'End':
+                            e.preventDefault();
+                            newIndex = options.length - 1;
+                            break;
+                        case ' ':
+                        case 'Enter':
+                            e.preventDefault();
+                            API.pick(opt, inputId, opt.dataset.value);
+                            return;
+                        default:
+                            return;
+                    }
+                    options.forEach(o => o.setAttribute('tabindex', '-1'));
+                    options[newIndex].setAttribute('tabindex', '0');
+                    options[newIndex].focus();
+                });
+                opt.addEventListener('click', () => {
+                    options.forEach(o => o.setAttribute('tabindex', '-1'));
+                    opt.setAttribute('tabindex', '0');
+                });
+            });
+        });
+    }
+
+    function bindEvents() {
+        el('btn-initiate')?.addEventListener('click', () => API.goIntake());
+
+        document.querySelectorAll('.opt').forEach(opt => {
+            opt.addEventListener('click', () => {
+                const step = opt.closest('.step');
+                if (!step) return;
+                API.pick(opt, 'a' + step.dataset.step, opt.dataset.value);
+            });
+        });
+
+        document.querySelectorAll('.nav-btn[data-next]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const step = btn.closest('.step');
+                if (!step) return;
+                API.nextStep(parseInt(step.dataset.step, 10), parseInt(btn.dataset.next, 10));
+            });
+        });
+
+        document.querySelectorAll('.nav-btn[data-prev]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const step = btn.closest('.step');
+                if (!step) return;
+                API.prevStep(parseInt(step.dataset.step, 10), parseInt(btn.dataset.prev, 10));
+            });
+        });
+
+        el('btn-transmit')?.addEventListener('click', () => API.transmit());
+        el('btn-copy-payload')?.addEventListener('click', () => API.copyEncryptedPayload());
+        el('btn-open-channel')?.addEventListener('click', () => API.openSecureChannel());
+        el('btn-demo-decrypt')?.addEventListener('click', () => API.demoDecrypt());
+
+        el('a7_name')?.addEventListener('input', () => {
+            if (el('name-error').classList.contains('show')) validateNameField();
+            checkInputs();
+            queueDraftSave();
+        });
+        el('a7_name')?.addEventListener('blur', validateNameField);
+
+        el('a7_contact')?.addEventListener('input', () => {
+            if (el('contact-error').classList.contains('show')) validateContactField();
+            checkInputs();
+            queueDraftSave();
+        });
+        el('a7_contact')?.addEventListener('blur', validateContactField);
+        el('a7_contact')?.addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                API.transmit();
+            }
+        });
+
+        el('btn-restore-accept')?.addEventListener('click', () => {
+            if (pendingDraft) restoreDraft(pendingDraft);
+            hideRestoreDialog();
+        });
+        el('btn-restore-decline')?.addEventListener('click', () => {
+            DraftManager.clear();
+            hideRestoreDialog();
+        });
+
+        el('btn-clear-data')?.addEventListener('click', showClearDataDialog);
+        el('btn-clear-cancel')?.addEventListener('click', hideClearDataDialog);
+        el('btn-clear-confirm')?.addEventListener('click', () => {
+            hideClearDataDialog();
+            API.reset();
+        });
+    }
+
+    const API = {
+        goIntake: async () => {
+            fade('panel-landing', 'panel-intake');
+            setProgress(1);
+            el('s1')?.querySelector('.step-q')?.focus();
+
+            const draft = await DraftManager.load();
+            if (draft) {
+                setTimeout(() => showRestoreDialog(draft), 650);
+            }
+        },
+
+        pick: (node, inputId, val) => {
+            const radiogroup = node.closest('[role="radiogroup"]');
+            radiogroup.querySelectorAll('.opt').forEach(o => {
+                o.classList.remove('chosen');
+                o.setAttribute('aria-checked', 'false');
+                o.setAttribute('tabindex', '-1');
+            });
+            node.classList.add('chosen');
+            node.setAttribute('aria-checked', 'true');
+            node.setAttribute('tabindex', '0');
+            el(inputId).value = val;
+            updateGoButton(node.closest('.step'));
+            queueDraftSave();
+        },
+
+        nextStep: (from, to) => {
+            if (!el('a' + from).value) return;
+            showStep(from, to, false);
+            setProgress(to);
+        },
+
+        prevStep: (from, to) => {
+            showStep(from, to, true);
+            setProgress(to);
+        },
+
+        validateNameField,
+        validateContactField,
+        checkInputs,
+        saveDraft: queueDraftSave,
+
+        transmit: async () => {
+            if (isProcessingCrypto) return;
+            if (!checkInputs()) {
+                validateNameField();
+                validateContactField();
+                return;
+            }
+
+            isProcessingCrypto = true;
+            setTransmitError('');
+            const btn = el('btn-transmit');
+            const originalLabel = btn.textContent;
+            btn.classList.add('transmitting');
+            btn.classList.remove('ready');
+            btn.textContent = 'Encrypting...';
+            btn.disabled = true;
+
+            lastIntakeData = {
+                operational_visibility: el('a1').value,
+                weight_concentration: el('a2').value,
+                access_point: el('a3').value,
+                pressure_source: el('a4').value,
+                relief_preference: el('a5').value,
+                start_preference: el('a6').value,
+                designation: el('a7_name').value.trim(),
+                contact: el('a7_contact').value.trim(),
+                timestamp: new Date().toISOString(),
+                registry: 'Phare — The Lighthouse • 2026'
+            };
+
+            try {
+                if (!crypto?.subtle) throw new Error('Web Crypto API unavailable. Serve over HTTPS.');
+                lastEncryptedPayload = await encryptForRegistry(lastIntakeData);
+                await submitToAPI(lastEncryptedPayload);
+                hasTransmitted = true;
+
+                fade('panel-intake', 'panel-success');
+                playSuccessCelebration();
+                DraftManager.clear();
+                setSuccessActionsEnabled(true, { hideTransmit: hasTransmitted });
+                lastIntakeData = null;
+            } catch (err) {
+                lastEncryptedPayload = null;
+                const attempts = noteTransmitAttempt();
+                let baseMsg = err.message?.includes('429')
+                    ? 'Registry channel is momentarily constrained. Please wait and retry.'
+                    : 'Transmission failed. Data was not sent. Please retry or contact the registry directly.';
+                if (attempts >= 3) {
+                    baseMsg += ' (Multiple recent attempts detected — waiting 30–60s may help.)';
+                }
+                setTransmitError(baseMsg);
+                btn.classList.remove('transmitting');
+                btn.textContent = originalLabel;
+                btn.disabled = false;
+                checkInputs();
+            } finally {
+                isProcessingCrypto = false;
+            }
+        },
+
+        copyEncryptedPayload: async () => {
+            const payload = getEncryptedPayloadString();
+            if (!payload) return;
+            const btn = el('btn-copy-payload');
+            const original = btn.textContent;
+            const ok = await copyText(payload);
+            btn.textContent = ok ? 'Copied to clipboard ✓' : 'Copy failed — try again';
+            setTimeout(() => { btn.textContent = original; }, 2200);
+        },
+
+        openSecureChannel: async () => {
+            const payload = getEncryptedPayloadString();
+            if (!payload) return;
+
+            // Production-only path (demo mailto branch removed)
+            if (hasTransmitted) return;
+            const btn = el('btn-open-channel');
+            const original = btn.textContent;
+            btn.textContent = 'Transmitting...';
+            btn.disabled = true;
+            try {
+                await submitToAPI(lastEncryptedPayload);
+                btn.textContent = 'Transmitted ✓';
+                setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 2200);
+            } catch (_) {
+                btn.textContent = original;
+                btn.disabled = false;
+                openModal(
+                    'Transmission Failed',
+                    'Could not reach the registry API. Your encrypted payload remains on this device.',
+                    'Copy the payload and contact the registry directly if this persists.'
+                );
+            }
+            return;
+        },
+
+        demoDecrypt: async () => { /* disabled in production build */ },
+
+        reset: () => {
+            hasTransmitted = false;
+            clearAllLocalData();
+            location.reload();
+        },
+
+        /* Expose production crypto hooks for backend integration */
+        crypto: Object.freeze({ generateECDHKeyPair, deriveSharedAESKey, encryptForRegistry }),
+        config: CONFIG,
+        version: PHARE_VERSION
+        // isDemo removed — this build is production-only (ECDH + Cloudflare Worker)
+    };
+
+    applyMotionPreference();
+    motionQuery.addEventListener('change', () => {
+        applyMotionPreference();
+        if (prefersReducedMotion) {
+            document.body.classList.remove('has-custom-cursor');
+            const ghostP = document.querySelector('.ghost-p');
+            if (ghostP) ghostP.style.transform = 'translate(0, 0)';
+        } else {
+            initCustomCursor();
+        }
+    });
+
+    // applyDemoMode() removed (production build)
+    initCustomCursor();
+    initKeyboardNavigation();
+    bindEvents();
+    setSuccessActionsEnabled(false);
+
+    // Cache hot elements once at startup (minor perf win, zero visual/aesthetic impact)
+    // Reduces repeated DOM queries in setProgress, checkInputs, transmit hot paths.
+    cachedProgress = el('intake-progress');
+    cachedStepLabel = el('step-label');
+    cachedTransmitBtn = el('btn-transmit');
+    cachedNameInput = el('a7_name');
+    cachedContactInput = el('a7_contact');
+
+    window.addEventListener('beforeunload', () => {
+        cryptoWorker.terminate();
+        URL.revokeObjectURL(workerBlobUrl);
+    });
+
+    if (!crypto?.subtle) {
+        setTimeout(() => {
+            openModal(
+                'HTTPS Required',
+                'Web Crypto is unavailable. Deploy this page over HTTPS for encryption to work.',
+                'Opening as a local file (file://) will block secure intake features.'
+            );
+        }, 600);
+    }
+
+    window.PhareRegistry = Object.freeze(API);
+
+    requestAnimationFrame(() => {
+        setTimeout(dismissInitLoader, 320);
+    });
+})();
+</script>
+
+</body>
+</html>

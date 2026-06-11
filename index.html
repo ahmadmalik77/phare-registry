@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Phare — The Lighthouse. A private, invitation-only registry for confidential executive intake.">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#0A1118">
+    <title>Phare — The Lighthouse · Registry</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230A1118'/%3E%3Ctext x='16' y='22' font-family='Georgia,serif' font-size='18' font-style='italic' fill='%23C8A96A' text-anchor='middle'%3EP%3C/text%3E%3C/svg%3E">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&family=Jost:wght@100;200;300;400&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<div id="init-loader" class="init-loader" aria-hidden="true">
+    <span>Initializing secure session</span>
+</div>
+
+<a href="#btn-initiate" class="skip-link">Skip to intake</a>
+
+<div class="cur-dot"  id="cur-dot"  aria-hidden="true"></div>
+<div class="cur-ring" id="cur-ring" aria-hidden="true"></div>
+
+<main class="frame">
+
+    <section class="col-left" id="col-left" aria-label="Brand introduction">
+        <div class="beacon" aria-hidden="true">
+            <div class="b-ring"></div>
+            <div class="b-ring"></div>
+        </div>
+
+        <div class="vert-tag" aria-hidden="true">Registry · 2026</div>
+
+        <header>
+            <div class="wordmark">Phare — The Lighthouse</div>
+            <div class="gold-rule" aria-hidden="true"></div>
+            <p class="registry-note">A NovaWorks Studio Registry • Private Intake</p>
+        </header>
+
+        <div class="hero" id="hero">
+            <h1 class="hero-title">Counsel<br>in absolute<br>silence.</h1>
+            <p class="hero-sub">A private harbor for leaders who carry<br>weight the world cannot witness.</p>
+        </div>
+
+        <p class="floor">By invitation only</p>
+    </section>
+
+    <section class="col-right" aria-label="Intake portal">
+
+        <div class="ghost-p" aria-hidden="true">P</div>
+
+        <div id="draft-indicator" class="draft-indicator" aria-live="polite" aria-atomic="true">
+            Draft encrypted on this device
+        </div>
+
+        <div id="panel-landing" class="panel" tabindex="-1">
+            <h2 class="landing-title">Access</h2>
+            <p class="landing-body">
+                Operational capacity is restricted.<br>
+                Establish a clearance handshake to proceed.
+            </p>
+            <button type="button" class="cta" id="btn-initiate">Initiate Ingest</button>
+        </div>
+
+        <div id="panel-intake" class="panel off" aria-hidden="true">
+
+            <div class="progress-wrap">
+                <p id="step-label" class="step-label" aria-live="polite">Step 1 of 7</p>
+                <div class="progress"
+                     role="progressbar"
+                     aria-label="Intake progress"
+                     aria-valuemin="1"
+                     aria-valuemax="7"
+                     aria-valuenow="1"
+                     aria-valuetext="Step 1 of 7: Operational visibility"
+                     id="intake-progress">
+                    <div class="seg" id="seg-1" aria-hidden="true"></div>
+                    <div class="seg" id="seg-2" aria-hidden="true"></div>
+                    <div class="seg" id="seg-3" aria-hidden="true"></div>
+                    <div class="seg" id="seg-4" aria-hidden="true"></div>
+                    <div class="seg" id="seg-5" aria-hidden="true"></div>
+                    <div class="seg" id="seg-6" aria-hidden="true"></div>
+                    <div class="seg" id="seg-7" aria-hidden="true"></div>
+                </div>
+            </div>
+
+            <div class="step on" id="s1" data-step="1">
+                <h3 class="step-q" id="q1" tabindex="-1">Operational visibility?</h3>
+                <div role="radiogroup" aria-labelledby="q1">
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="corp">Corporate Governance</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="pub">Public Exposure Footprint</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="cap">Capital Architecture</button>
+                </div>
+                <input type="hidden" id="a1" value="">
+                <div class="nav">
+                    <span aria-hidden="true"></span>
+                    <button type="button" class="nav-btn go" data-next="2" disabled>Proceed →</button>
+                </div>
+            </div>
+
+            <div class="step" id="s2" data-step="2">
+                <h3 class="step-q" id="q2" tabindex="-1">Where does weight concentrate?</h3>
+                <div role="radiogroup" aria-labelledby="q2">
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="fatigue">Executive Fatigue</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="stigma">Isolation Stigma</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="crisis">Crisis Containment</button>
+                </div>
+                <input type="hidden" id="a2" value="">
+                <div class="nav">
+                    <button type="button" class="nav-btn" data-prev="1">← Back</button>
+                    <button type="button" class="nav-btn go" data-next="3" disabled>Proceed →</button>
+                </div>
+            </div>
+
+            <div class="step" id="s3" data-step="3">
+                <h3 class="step-q" id="q3" tabindex="-1">Structural access point?</h3>
+                <div role="radiogroup" aria-labelledby="q3">
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="lounge">The Café Lounge</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="mobile">Mobile Sanctuary Concierge</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="digital">Encrypted Digital Node</button>
+                </div>
+                <input type="hidden" id="a3" value="">
+                <div class="nav">
+                    <button type="button" class="nav-btn" data-prev="2">← Back</button>
+                    <button type="button" class="nav-btn go" data-next="4" disabled>Proceed →</button>
+                </div>
+            </div>
+
+            <div class="step" id="s4" data-step="4">
+                <h3 class="step-q" id="q4" tabindex="-1">What creates the most pressure today?</h3>
+                <div role="radiogroup" aria-labelledby="q4">
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="leadership">Leadership responsibilities</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="visibility">Public visibility</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="financial">Financial decisions</button>
+                </div>
+                <input type="hidden" id="a4" value="">
+                <div class="nav">
+                    <button type="button" class="nav-btn" data-prev="3">← Back</button>
+                    <button type="button" class="nav-btn go" data-next="5" disabled>Proceed →</button>
+                </div>
+            </div>
+
+            <div class="step" id="s5" data-step="5">
+                <h3 class="step-q" id="q5" tabindex="-1">What would bring the greatest relief?</h3>
+                <div role="radiogroup" aria-labelledby="q5">
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="clarity">Strategic clarity</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="support">Confidential support</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="space">Protected thinking space</button>
+                </div>
+                <input type="hidden" id="a5" value="">
+                <div class="nav">
+                    <button type="button" class="nav-btn" data-prev="4">← Back</button>
+                    <button type="button" class="nav-btn go" data-next="6" disabled>Proceed →</button>
+                </div>
+            </div>
+
+            <div class="step" id="s6" data-step="6">
+                <h3 class="step-q" id="q6" tabindex="-1">How would you prefer to begin?</h3>
+                <div role="radiogroup" aria-labelledby="q6">
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="call">Private conversation</button>
+                    <button type="button" class="opt" role="radio" aria-checked="false" data-value="written">Written exchange first</button>
+                </div>
+                <input type="hidden" id="a6" value="">
+                <div class="nav">
+                    <button type="button" class="nav-btn" data-prev="5">← Back</button>
+                    <button type="button" class="nav-btn go" data-next="7" disabled>Proceed →</button>
+                </div>
+            </div>
+
+            <div class="step" id="s7" data-step="7">
+                <h3 class="step-q" id="q7" tabindex="-1">Establish Designation</h3>
+
+                <!-- Production honeypot: hidden from users; backend must reject if filled -->
+                <div class="hp-field" aria-hidden="true">
+                    <label for="a7_website">Website</label>
+                    <input type="text" id="a7_website" name="website" tabindex="-1" autocomplete="off">
+                </div>
+
+                <div class="input-group">
+                    <label for="a7_name">Preferred Name or Designation</label>
+                    <input type="text" id="a7_name" class="text-input"
+                           placeholder="Full name or alias"
+                           autocomplete="name"
+                           required minlength="2"
+                           aria-describedby="name-hint name-error">
+                    <p id="name-hint" class="input-hint">At least two characters — full name or professional alias</p>
+                    <div id="name-error" class="input-error" role="alert">Please enter a valid name or designation (letters, spaces, hyphens)</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="a7_contact">Secure Contact</label>
+                    <input type="text" id="a7_contact" class="text-input"
+                           placeholder="Email or phone"
+                           autocomplete="email"
+                           inputmode="email"
+                           required
+                           aria-describedby="contact-error">
+                    <div id="contact-error" class="input-error" role="alert">Please provide a valid email or phone number</div>
+                </div>
+
+                <div class="nav">
+                    <button type="button" class="nav-btn" data-prev="6">← Back</button>
+                    <button type="button" class="nav-btn go" id="btn-transmit" disabled>Transmit →</button>
+                </div>
+
+                <p class="production-note" id="production-note">
+                    Secured via ECDH key agreement with the Phare registry API on Cloudflare.
+                </p>
+                <p id="transmit-error" class="status-banner" role="alert"></p>
+            </div>
+
+        </div>
+
+        <div id="panel-success" class="panel off" aria-hidden="true">
+            <div class="success-beacon" aria-hidden="true">
+                <span class="sb-ring"></span>
+                <span class="sb-ring"></span>
+            </div>
+            <div id="success-confetti" class="success-confetti" aria-hidden="true"></div>
+            <span class="success-mark">Phare — The Lighthouse</span>
+            <p class="success-body">
+                Your coordinates have been received<br>
+                under zero-retention parameters.<br><br>
+                If alignment confirms, a path<br>
+                will open — through the<br>
+                quietest channels.
+            </p>
+
+            <p class="encryption-note" id="encryption-note">
+                Intake encrypted client-side via ECDH + AES-256-GCM before transmission<br>
+                to the Phare registry API. Zero-retention enforced server-side.
+            </p>
+
+            <div class="secure-actions">
+                <button type="button" class="secure-btn" id="btn-copy-payload" disabled>
+                    Copy AES-256-GCM encrypted payload
+                </button>
+                <button type="button" class="secure-btn" id="btn-open-channel" disabled>
+                    Open secure transmission channel
+                </button>
+                <!-- demo-only button removed for production build -->
+            </div>
+        </div>
+
+        <div class="utility-bar">
+            <button type="button" class="clear-data-btn" id="btn-clear-data">Clear data on this device</button>
+        </div>
+
+    </section>
+
+</main>
+
+<div id="restore-dialog" class="restore-dialog" role="dialog" aria-modal="true" aria-labelledby="restore-title" aria-hidden="true">
+    <div class="restore-card">
+        <h2 id="restore-title">Restore previous draft?</h2>
+        <p>A device-encrypted draft from a prior session was found. Restore your progress, or begin fresh.</p>
+        <div class="restore-actions">
+            <button type="button" class="nav-btn" id="btn-restore-decline">Begin fresh</button>
+            <button type="button" class="cta" id="btn-restore-accept" style="margin-top:0;">Restore draft</button>
+        </div>
+    </div>
+</div>
+
+<div id="clear-data-dialog" class="restore-dialog" role="dialog" aria-modal="true" aria-labelledby="clear-data-title" aria-hidden="true">
+    <div class="restore-card">
+        <h2 id="clear-data-title">Clear data on this device?</h2>
+        <p>This removes any saved draft and encryption keys stored locally in this browser. Your current session will reload.</p>
+        <div class="restore-actions">
+            <button type="button" class="nav-btn" id="btn-clear-cancel">Cancel</button>
+            <button type="button" class="cta" id="btn-clear-confirm" style="margin-top:0;">Clear &amp; reload</button>
+        </div>
+    </div>
+</div>
+
+    <script src="assets/config.js"></script>
+    <script src="assets/app.js" defer></script>
+</body>
+</html>

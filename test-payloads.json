@@ -1,0 +1,42 @@
+{
+  "note": "Phare test payloads for manual verification of the decrypt tool and protocol. These are sanitized examples only. Never use real private keys or real intake data here.",
+  "protocol_version": "phare-aes-gcm-ecdh-v2",
+  "samples": [
+    {
+      "description": "Minimal valid encrypted record (simulated roundtrip)",
+      "private_jwk_example_note": "Generate your own real private key using the browser snippet in README or the Sample button in decrypt.html. The private below is FAKE and for illustration only.",
+      "private_jwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "EXAMPLE-x-value-replace-with-real",
+        "y": "EXAMPLE-y-value-replace-with-real",
+        "d": "EXAMPLE-d-private-replace-with-real"
+      },
+      "encrypted_record": {
+        "v": "phare-aes-gcm-ecdh-v2",
+        "ephemeralPublicKey": {
+          "kty": "EC",
+          "crv": "P-256",
+          "x": "REPLACE-WITH-REAL-EPHEMERAL-x",
+          "y": "REPLACE-WITH-REAL-EPHEMERAL-y"
+        },
+        "iv": "REPLACE-WITH-REAL-12-BYTE-IV-base64",
+        "ciphertext": "REPLACE-WITH-REAL-CIPHERTEXT-base64"
+      },
+      "expected_plaintext_when_decrypted_correctly": {
+        "operational_visibility": "corp",
+        "weight_concentration": "fatigue",
+        "access_point": "digital",
+        "pressure_source": "leadership",
+        "relief_preference": "clarity",
+        "start_preference": "call",
+        "designation": "Test Executive",
+        "contact": "test@example.com",
+        "timestamp": "2026-06-11T12:00:00.000Z",
+        "registry": "Phare — The Lighthouse • 2026"
+      }
+    }
+  ],
+  "how_to_use": "1. Use the 'Generate Sample Keypair + Test Roundtrip' button in decrypt.html to create real working samples. 2. Copy the generated privateJwk and simulatedEncrypted into the fields. 3. Or paste real records from your KV dashboard (after you have the real private key).",
+  "warning": "The private key material in this file (if any) must never be used for real deployments. Always generate fresh keys for production use."
+}

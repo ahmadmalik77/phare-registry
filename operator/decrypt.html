@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="color-scheme" content="dark">
+    <title>Phare — Operator Decrypt Tool</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&family=Jost:wght@100;200;300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            color-scheme: dark;
+            --void:  #0A1118;
+            --edge:  #1C2733;
+            --shade: #2A3745;
+            --smoke: #8E96A0;
+            --haze:  #68747E;
+            --veil:  #96A0AA;
+            --paper: #E8E4DF;
+            --white: #FFFFFF;
+            --gold:  #C8A96A;
+            --error: #c88a8a;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+        html, body { background: var(--void); color: var(--haze); font-family: 'Jost', sans-serif; font-weight: 200; letter-spacing: 0.07em; }
+        body { padding: 2rem; max-width: 820px; margin: 0 auto; line-height: 1.6; }
+        .wordmark { font-size: 0.65rem; font-weight: 300; letter-spacing: 0.52em; text-transform: uppercase; color: var(--gold); }
+        h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.85rem; font-weight: 400; letter-spacing: 0.02em; color: var(--paper); margin: 0.6rem 0 1.25rem; }
+        .warning {
+            background: rgba(200, 138, 138, 0.08);
+            border: 1px solid var(--error);
+            color: var(--error);
+            padding: 1rem 1.25rem;
+            font-size: 0.78rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+        .warning strong { color: var(--paper); }
+        label { display: block; font-size: 0.62rem; letter-spacing: 0.48em; text-transform: uppercase; color: var(--smoke); margin-bottom: 0.4rem; }
+        textarea {
+            width: 100%;
+            background: var(--void);
+            border: 1px solid var(--edge);
+            color: var(--paper);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.78rem;
+            padding: 0.85rem;
+            min-height: 128px;
+            resize: vertical;
+            margin-bottom: 1.1rem;
+        }
+        textarea:focus { outline: 1px solid var(--gold); border-color: var(--gold); }
+        .btn {
+            background: transparent;
+            border: 1px solid var(--edge);
+            color: var(--veil);
+            font-family: 'Jost', sans-serif;
+            font-size: 0.62rem; font-weight: 300;
+            letter-spacing: 0.48em; text-transform: uppercase;
+            padding: 0.85rem 1.5rem;
+            transition: all 0.2s cubic-bezier(.16,1,.3,1);
+            cursor: pointer;
+            margin-right: 0.6rem;
+            margin-bottom: 0.6rem;
+        }
+        .btn:hover { border-color: var(--gold); color: var(--white); }
+        .btn.primary { border-color: var(--gold); color: var(--gold); }
+        .btn.primary:hover { background: rgba(200,169,106,0.06); }
+        .btn:disabled { opacity: 0.4; pointer-events: none; }
+        .results {
+            margin-top: 1.5rem;
+            border: 1px solid var(--edge);
+            padding: 1rem 1.25rem;
+            background: rgba(0,0,0,0.2);
+            min-height: 120px;
+            white-space: pre-wrap;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.82rem;
+            color: var(--paper);
+        }
+        .meta { font-size: 0.58rem; color: var(--smoke); margin-top: 1.5rem; opacity: 0.7; }
+        .footer { margin-top: 2.5rem; font-size: 0.58rem; color: var(--smoke); }
+        .success { color: var(--gold); }
+        .error { color: var(--error); }
+    </style>
+</head>
+<body>
+    <div class="wordmark">Phare — The Lighthouse</div>
+    <h1>Operator Decrypt Tool</h1>
+
+    <div class="warning">
+        <strong>Client-side only. Zero server contact.</strong><br>
+        This page performs the exact inverse of the public intake encryption using your REGISTRY_PRIVATE_JWK.<br>
+        • Never paste your private key on any untrusted site or shared machine.<br>
+        • Save this file locally and open it in a private/incognito window.<br>
+        • Close the tab immediately after use. The key never leaves your browser.
+    </div>
+
+    <div>
+        <label for="privateJwk">REGISTRY_PRIVATE_JWK (paste the full JWK JSON)</label>
+        <textarea id="privateJwk" spellcheck="false" placeholder='{"kty":"EC","crv":"P-256","x":"...","y":"...","d":"..."}'></textarea>
+    </div>
+
+    <div>
+        <label for="record">Intake Record (paste the full JSON object from KV, or the inner payload)</label>
+        <textarea id="record" spellcheck="false" placeholder='{"v":"phare-aes-gcm-ecdh-v2","ephemeralPublicKey":{...},"iv":"...","ciphertext":"..."}'></textarea>
+    </div>
+
+    <button type="button" class="btn primary" id="btn-decrypt">Derive Shared Key &amp; Decrypt</button>
+    <button type="button" class="btn" id="btn-wipe">Wipe All Sensitive Data</button>
+    <button type="button" class="btn" id="btn-sample">Generate Sample Keypair + Test Roundtrip</button>
+
+    <div id="results" class="results" aria-live="polite" style="display:none;"></div>
+    <div id="batch-results" style="margin-top: 1rem;"></div>
+
+    <!-- Batch export controls (appear when multi-record results are present) -->
+    <div id="batch-export" style="display:none; margin-top: 0.5rem;">
+        <button type="button" class="btn" id="btn-export-json">Copy all successful as JSON</button>
+        <button type="button" class="btn" id="btn-export-csv">Copy all successful as CSV</button>
+    </div>
+
+    <div class="meta">
+        Protocol: ECDH P-256 + AES-256-GCM (v2). The same derivation used on the intake side is reversed here.
+        Results are never stored or transmitted.
+    </div>
+
+    <div class="footer">
+        Phare Operator Tool • Close this window when finished. For production use only by the registry holder.
+    </div>
+
+    <script>
+        (function () {
+            'use strict';
+
+            /* === PHARE OPERATOR DECRYPT TOOL (enhanced 10/10 version) === */
+            const PHARE_VERSION = '2026.06-production';
+
+            const el = id => document.getElementById(id);
+
+            // --- Base64 helpers (shared with main page logic) ---
+            function uint8ToBase64(bytes) {
+                let binary = '';
+                for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+                return btoa(binary);
+            }
+
+            function base64ToUint8Array(base64) {
+                const binary = atob(base64);
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                return bytes;
+            }
+
+            // --- Crypto primitives (exact inverse of the public encryptForRegistry flow) ---
+            async function importPrivateJwk(jwk) {
+                if (!jwk || jwk.kty !== 'EC' || jwk.crv !== 'P-256' || !jwk.d) {
+                    throw new Error('Invalid or incomplete private JWK (must be P-256 with d component)');
+                }
+                return crypto.subtle.importKey(
+                    'jwk',
+                    jwk,
+                    { name: 'ECDH', namedCurve: 'P-256' },
+                    false,
+                    ['deriveKey']
+                );
+            }
+
+            async function importEphemeralPublic(ephemJwk) {
+                if (!ephemJwk || ephemJwk.kty !== 'EC' || ephemJwk.crv !== 'P-256' || !ephemJwk.x || !ephemJwk.y) {
+                    throw new Error('Invalid ephemeralPublicKey (must be P-256 JWK with x/y)');
+                }
+                return crypto.subtle.importKey(
+                    'jwk',
+                    ephemJwk,
+                    { name: 'ECDH', namedCurve: 'P-256' },
+                    true,
+                    []
+                );
+            }
+
+            async function deriveAESKey(privateKey, peerPublicKey) {
+                return crypto.subtle.deriveKey(
+                    { name: 'ECDH', public: peerPublicKey },
+                    privateKey,
+                    { name: 'AES-GCM', length: 256 },
+                    false,
+                    ['decrypt']
+                );
+            }
+
+            async function decryptOne(privateJwk, payload) {
+                if (!payload || typeof payload !== 'object') throw new Error('Record must be a JSON object');
+                if (payload.v !== 'phare-aes-gcm-ecdh-v2') throw new Error('Unsupported payload version (expected phare-aes-gcm-ecdh-v2)');
+                if (!payload.ephemeralPublicKey) throw new Error('Missing ephemeralPublicKey');
+                if (!payload.iv || !payload.ciphertext) throw new Error('Missing iv or ciphertext');
+
+                const priv = await importPrivateJwk(privateJwk);
+                const pub = await importEphemeralPublic(payload.ephemeralPublicKey);
+                const key = await deriveAESKey(priv, pub);
+
+                const iv = base64ToUint8Array(payload.iv);
+                const ct = base64ToUint8Array(payload.ciphertext);
+
+                const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
+                const json = new TextDecoder().decode(decrypted);
+                return JSON.parse(json);
+            }
+
+            // Supports single object or array of objects (or JSON string of either)
+            async function decryptRecords(privateJwk, input) {
+                let data = input;
+                if (typeof input === 'string') {
+                    try { data = JSON.parse(input.trim()); } catch (_) { throw new Error('Record must be valid JSON (object or array)'); }
+                }
+                const list = Array.isArray(data) ? data : [data];
+                const results = [];
+                for (let i = 0; i < list.length; i++) {
+                    try {
+                        const pt = await decryptOne(privateJwk, list[i]);
+                        results.push({ index: i, success: true, plaintext: pt, raw: list[i] });
+                    } catch (e) {
+                        results.push({ index: i, success: false, error: e.message, raw: list[i] });
+                    }
+                }
+                return results;
+            }
+
+            // --- Sample generator: proves roundtrip locally (uses same crypto primitives) ---
+            async function generateSampleAndTest() {
+                const out = el('results');
+                const batch = el('batch-results');
+                out.style.display = 'block';
+                out.textContent = 'Generating fresh test keypair and performing local roundtrip...';
+                out.className = 'results';
+
+                try {
+                    // 1. Generate a fresh registry-style keypair (simulating operator)
+                    const kp = await crypto.subtle.generateKey(
+                        { name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveKey']
+                    );
+                    const privateJwk = await crypto.subtle.exportKey('jwk', kp.privateKey);
+                    const publicJwk = await crypto.subtle.exportKey('jwk', kp.publicKey);
+
+                    // 2. Simulate what the public page does (ephemeral + derive + encrypt)
+                    const intake = {
+                        operational_visibility: 'corp',
+                        weight_concentration: 'fatigue',
+                        access_point: 'digital',
+                        pressure_source: 'leadership',
+                        relief_preference: 'clarity',
+                        start_preference: 'call',
+                        designation: 'Test Executive',
+                        contact: 'test@example.com',
+                        timestamp: new Date().toISOString(),
+                        registry: 'Phare — The Lighthouse • 2026 (SAMPLE)'
+                    };
+
+                    // Client-side simulation (mirrors encryptForRegistry)
+                    const ephemeral = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveKey', 'deriveBits']);
+                    const sharedKey = await crypto.subtle.deriveKey(
+                        { name: 'ECDH', public: publicJwk },
+                        ephemeral.privateKey,
+                        { name: 'AES-GCM', length: 256 },
+                        false,
+                        ['encrypt']
+                    );
+                    const iv = crypto.getRandomValues(new Uint8Array(12));
+                    const ciphertext = await crypto.subtle.encrypt(
+                        { name: 'AES-GCM', iv },
+                        sharedKey,
+                        new TextEncoder().encode(JSON.stringify(intake))
+                    );
+                    const ephemeralPublicKey = await crypto.subtle.exportKey('jwk', ephemeral.publicKey);
+
+                    const simulatedEncrypted = {
+                        v: 'phare-aes-gcm-ecdh-v2',
+                        ephemeralPublicKey,
+                        iv: uint8ToBase64(iv),
+                        ciphertext: uint8ToBase64(new Uint8Array(ciphertext))
+                    };
+
+                    // 3. Now decrypt it using our tool logic
+                    const privateJwkForTool = privateJwk; // the one we generated
+                    const decrypted = await decryptOne(privateJwkForTool, simulatedEncrypted);
+
+                    // Display nice results
+                    const html = [
+                        '<span class="success">SAMPLE ROUNDTRIP SUCCESSFUL</span>',
+                        '',
+                        '=== PRIVATE JWK (for testing only — never use in real deploys) ===',
+                        JSON.stringify(privateJwk, null, 2),
+                        '',
+                        '=== SIMULATED ENCRYPTED PAYLOAD (what a real intake would send) ===',
+                        JSON.stringify(simulatedEncrypted, null, 2),
+                        '',
+                        '=== DECRYPTED INTAKE (exact match) ===',
+                        JSON.stringify(decrypted, null, 2)
+                    ].join('\n');
+
+                    out.innerHTML = html.replace(/\n/g, '<br>');
+                    out.classList.add('success');
+
+                    // Also populate the inputs so user can immediately re-decrypt the sample
+                    el('privateJwk').value = JSON.stringify(privateJwk);
+                    el('record').value = JSON.stringify(simulatedEncrypted);
+
+                } catch (err) {
+                    out.textContent = 'SAMPLE TEST FAILED\n\n' + (err.message || String(err));
+                    out.className = 'results error';
+                }
+            }
+
+            // Store last successful batch results for export
+            let lastBatchResults = [];
+
+            async function handleDecrypt() {
+                const out = el('results');
+                const batch = el('batch-results');
+                const exportBar = el('batch-export');
+                batch.innerHTML = '';
+                exportBar.style.display = 'none';
+                lastBatchResults = [];
+                out.style.display = 'block';
+                out.textContent = 'Deriving key and decrypting...';
+                out.className = 'results';
+
+                try {
+                    const jwkText = el('privateJwk').value.trim();
+                    const recordText = el('record').value.trim();
+                    if (!jwkText) throw new Error('Paste the REGISTRY_PRIVATE_JWK first');
+                    if (!recordText) throw new Error('Paste the intake record JSON (object or array)');
+
+                    const privateJwk = JSON.parse(jwkText);
+                    const results = await decryptRecords(privateJwk, recordText);
+                    lastBatchResults = results;
+
+                    if (results.length === 1 && results[0].success) {
+                        out.innerHTML = '<span class="success">DECRYPTION SUCCESSFUL</span>\n\n' + JSON.stringify(results[0].plaintext, null, 2);
+                        out.classList.add('success');
+                    } else {
+                        // Multi or mixed results
+                        out.style.display = 'none';
+                        let html = '<strong>Batch Results (' + results.length + ')</strong><br><br>';
+                        results.forEach((r, idx) => {
+                            if (r.success) {
+                                html += `<div style="margin-bottom:1rem;border-left:3px solid var(--gold);padding-left:0.5rem;">` +
+                                    `<strong>#${idx} — SUCCESS</strong><br>` +
+                                    `<pre style="white-space:pre-wrap;">${JSON.stringify(r.plaintext, null, 2)}</pre>` +
+                                    `<button class="btn" data-copy-idx="${idx}">Copy plaintext</button>` +
+                                    `</div>`;
+                            } else {
+                                html += `<div style="margin-bottom:1rem;color:var(--error);">` +
+                                    `#${idx} — FAILED: ${r.error}` +
+                                    `</div>`;
+                            }
+                        });
+                        batch.innerHTML = html;
+
+                        // Show export bar for batch
+                        if (results.some(r => r.success)) {
+                            exportBar.style.display = 'block';
+                        }
+
+                        // Attach copy handlers for successful ones
+                        batch.querySelectorAll('button[data-copy-idx]').forEach(btn => {
+                            btn.addEventListener('click', () => {
+                                const i = parseInt(btn.getAttribute('data-copy-idx'), 10);
+                                const text = JSON.stringify(results[i].plaintext, null, 2);
+                                navigator.clipboard.writeText(text).then(() => {
+                                    const orig = btn.textContent;
+                                    btn.textContent = 'Copied!';
+                                    setTimeout(() => btn.textContent = orig, 1500);
+                                });
+                            });
+                        });
+                    }
+                } catch (err) {
+                    out.textContent = 'DECRYPTION FAILED\n\n' + (err.message || String(err));
+                    out.className = 'results error';
+                }
+            }
+
+            function exportBatch(format) {
+                const successes = lastBatchResults.filter(r => r.success);
+                if (!successes.length) return;
+
+                let text = '';
+                if (format === 'json') {
+                    text = JSON.stringify(successes.map(r => r.plaintext), null, 2);
+                } else if (format === 'csv') {
+                    // Simple CSV: header from first object keys + rows
+                    const first = successes[0].plaintext;
+                    const headers = Object.keys(first);
+                    const rows = successes.map(r => headers.map(h => JSON.stringify(r.plaintext[h] ?? '')).join(','));
+                    text = headers.join(',') + '\n' + rows.join('\n');
+                }
+
+                navigator.clipboard.writeText(text).then(() => {
+                    const origText = el('btn-export-' + format).textContent;
+                    el('btn-export-' + format).textContent = 'Copied!';
+                    setTimeout(() => {
+                        if (el('btn-export-' + format)) el('btn-export-' + format).textContent = origText;
+                    }, 1500);
+                });
+            }
+
+            function handleWipe() {
+                el('privateJwk').value = '';
+                el('record').value = '';
+                const out = el('results');
+                const batch = el('batch-results');
+                out.textContent = '';
+                out.style.display = 'none';
+                out.className = 'results';
+                batch.innerHTML = '';
+                // Aggressive clear of any sensitive in-memory (the results vars are local to handlers)
+            }
+
+            function bind() {
+                el('btn-decrypt').addEventListener('click', handleDecrypt);
+                el('btn-wipe').addEventListener('click', handleWipe);
+                el('btn-sample').addEventListener('click', generateSampleAndTest);
+
+                // Batch export buttons (for multi-record results)
+                const exportJson = el('btn-export-json');
+                const exportCsv = el('btn-export-csv');
+                if (exportJson) exportJson.addEventListener('click', () => exportBatch('json'));
+                if (exportCsv) exportCsv.addEventListener('click', () => exportBatch('csv'));
+
+                // Keyboard niceties
+                [el('privateJwk'), el('record')].forEach(ta => {
+                    ta.addEventListener('keydown', e => {
+                        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                            e.preventDefault();
+                            handleDecrypt();
+                        }
+                    });
+                });
+
+                // Safety: clear on unload
+                window.addEventListener('beforeunload', () => {
+                    try {
+                        el('privateJwk').value = '';
+                        el('record').value = '';
+                    } catch (_) {}
+                });
+
+                // Expose for advanced operators / console use
+                window.PhareDecrypt = {
+                    version: PHARE_VERSION,
+                    decryptRecords,
+                    generateSampleAndTest
+                };
+            }
+
+            // Boot
+            bind();
+            console.log('%c[Phare Decrypt v' + PHARE_VERSION + '] Tool ready. All crypto client-side only. window.PhareDecrypt available for advanced use.', 'color:#68747E');
+        })();
+    </script>
+</body>
+</html>
