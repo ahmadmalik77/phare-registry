@@ -1,7 +1,8 @@
 # Phare Registry — Brownfield Project Documentation
 
-**Generated:** 2026-06-11 · **Workflow:** `bmad-document-project` (initial scan, adapted)  
-**Project:** `phare-registry` · **Type:** Static confidential intake + Cloudflare Worker API
+**Generated:** 2026-06-11 (v11 refresh) · **Workflow:** `bmad-document-project`  
+**Project:** `phare-registry` · **Version:** `2026.06-production.11`  
+**Type:** Static confidential intake + Cloudflare Worker API
 
 ---
 
@@ -14,7 +15,8 @@
 | Host (public) | GitHub Pages — `ahmadmalik77.github.io/phare-registry` |
 | Host (API) | Cloudflare Worker — `phare-intake.ahmadmalik77.workers.dev` |
 | Storage | Cloudflare KV — opaque ciphertext, 4h TTL |
-| Operator tooling | `operator/decrypt.html` (local only, never on Pages) |
+| Access model | **Option B** — public intake (optional invite via Worker secret) |
+| Operator tooling | `operator/decrypt.html` (local only) |
 
 ---
 
@@ -22,79 +24,67 @@
 
 ```
 phare-registry/
-├── index.html                 # Public wizard shell (286 lines on main; DO NOT npm build blindly)
+├── index.html                 # Public wizard (286 lines; cache ?v=20260611h)
 ├── assets/
-│   ├── app.js                 # Wizard, ECDH transmit, a11y, custom cursor
-│   ├── styles.css             # Luxury UI
-│   ├── config.js              # Gitignored — Worker URLs + optional pin/invite
-│   ├── config.example.js
-│   └── draft-crypto-worker.js # Local draft PBKDF2/AES worker
-├── cloudflare/
-│   ├── worker.js              # Intake API (pubkey, POST, health)
-│   └── wrangler.toml
-├── operator/decrypt.html      # Operator decrypt + batch export
-├── lib/phare-crypto.mjs       # Shared crypto for tests/CLI
-├── tests/crypto.test.mjs
-├── PROTOCOL.md                # Crypto + data-flow contract
-├── SECURITY.md                # Threat model + operator duties
-├── README.md                  # Deploy runbook
-├── archive/index.monolith.html # Historical single-file source
-└── scripts/                   # build, deploy, validate, setup
+│   ├── app.js                 # Wizard, ECDH, a11y — NO window.PhareRegistry
+│   ├── styles.css             # Luxury UI (aesthetics frozen)
+│   ├── config.js              # Worker URLs + PUBKEY_FINGERPRINT
+│   └── draft-crypto-worker.js # Local draft encryption
+├── cloudflare/worker.js       # Intake API (imports lib/*)
+├── lib/
+│   ├── phare-crypto.mjs       # Node/test crypto
+│   ├── intake-validate.mjs    # Payload + honeypot validation
+│   └── worker-http.mjs        # CORS, security headers, JSON helper
+├── tests/                     # 12 automated tests
+├── deploy/_headers            # Netlify/Cloudflare Pages security headers
+├── operator/decrypt.html      # Never on public Pages
+├── docs/bmad/                 # BMad workflow artifacts
+└── scripts/                   # build, validate, deploy, smoke
 ```
 
 ---
 
 ## 3. Runtime data flow
 
-1. User completes 7-step wizard in browser.
-2. Client fetches registry **public ECDH JWK** from Worker (`GET /api/intake/pubkey`).
-3. Client generates **ephemeral** ECDH keypair, derives AES-256-GCM key via `deriveBits`.
-4. Intake JSON encrypted client-side → `phare-aes-gcm-ecdh-v2` envelope.
-5. `POST /api/intake` with ciphertext + empty honeypot `b_hp_x7k9`.
-6. Worker stores opaque record in KV `intake:{uuid}` (4h TTL). No plaintext, no IP in record.
-7. Operator decrypts via `operator/decrypt.html` + `REGISTRY_PRIVATE_JWK`.
+1. User completes 7-step wizard.
+2. Client fetches registry public ECDH JWK (`GET /api/intake/pubkey`).
+3. Optional fingerprint pin in `config.js` detects MITM.
+4. Client encrypts intake JSON (ECDH P-256 → AES-256-GCM v2).
+5. Client POSTs opaque envelope to Worker (no invite required — Option B).
+6. Worker stores ciphertext in KV (4h TTL); operator decrypts locally.
 
 ---
 
-## 4. Key configuration surfaces
+## 4. Configuration surface
 
-| Surface | Purpose |
-|---------|---------|
-| `assets/config.js` | `API_URL`, `PUBKEY_URL`, optional `PUBKEY_FINGERPRINT`, `INVITE_TOKEN` |
-| Wrangler secrets | `REGISTRY_PRIVATE_JWK`, `ALLOWED_ORIGINS`, `IP_HASH_SALT`, optional `INVITE_TOKEN` |
-| `cloudflare/wrangler.toml` | KV binding, worker name |
-
-**Live config (2026-06-11):** fingerprint and invite **disabled** (`null`).
+| File / Secret | Purpose |
+|---------------|---------|
+| `assets/config.js` | `API_URL`, `PUBKEY_URL`, `PUBKEY_FINGERPRINT` |
+| `REGISTRY_PRIVATE_JWK` | Worker secret — decrypt authority |
+| `ALLOWED_ORIGINS` | CORS allowlist (fail-closed) |
+| `IP_HASH_SALT` | Rate-limit IP hashing (required) |
+| `INVITE_TOKEN` | Optional — re-enable Option A |
 
 ---
 
-## 5. Build & deploy commands
+## 5. Build & quality gates
 
 | Command | Purpose |
 |---------|---------|
-| `npm run setup` | Interactive `config.js` |
-| `npm run test` | Crypto unit tests |
-| `npm run validate` | Structure checks (weak on DOM) |
-| `npm run build` | **⚠️ FOOTGUN** — can strip `index.html` body if run on modular tree |
-| `scripts/deploy-worker.ps1` | Wrangler deploy |
-| `scripts/deploy-pages.ps1` | Build `dist-pages/` (excludes operator/) |
+| `npm run ci` | 12 tests + structure validate |
+| `npm run build` | Safe rebuild (guarded finalize) |
+| `scripts/test-post.mjs` | Operator live smoke (env vars only) |
 
 ---
 
-## 6. AI agent rules (project-context summary)
+## 6. BMad artifact index
 
-- **Never** deploy `operator/` to public Pages.
-- **Never** commit `REGISTRY_PRIVATE_JWK` or Cloudflare tokens.
-- **Canonical live frontend** is committed `index.html` + `assets/*` on `main` — not `index.production.html` alone.
-- **Do not run `npm run build` and commit** without fixing `build-html.mjs` to source from `archive/index.monolith.html`.
-- ECDH public key import must use `[]` usages + `deriveBits` (not `deriveKey` on public JWK).
-- Honeypot field: `#a7_hp_trap` / `b_hp_x7k9` — not `website`.
-- Custom cursor: keep `.cur-dot`/`.cur-ring` visible below 1080px on `(pointer: fine)`.
-
----
-
-## 7. Related artifacts
-
-- `docs/bmad/02-investigation-case.md`
-- `docs/bmad/03-implementation-readiness.md`
-- `docs/bmad/04-adversarial-review.md`
+| File | Workflow |
+|------|----------|
+| `01-project-documentation.md` | document-project |
+| `02-investigation-case.md` | investigate |
+| `03-implementation-readiness.md` | check-implementation-readiness |
+| `04-adversarial-review.md` | review-adversarial-general |
+| `05-production-certification.md` | quick-dev certification |
+| `06-code-review-triage.md` | code-review |
+| `implementation/spec-production-v11-option-b.md` | quick-dev spec |
