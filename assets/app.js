@@ -42,7 +42,7 @@
 
 
     /* === 10/10 internal version (exposed for operators / debugging, no UI impact) === */
-    const PHARE_VERSION = '2026.06-production.11';
+    const PHARE_VERSION = '2026.06-production.12';
 
     /*
      * PRODUCTION HARDENING (GitHub Pages host + Cloudflare Worker API):
@@ -86,6 +86,20 @@
     // This reduces repeated getElementById in the wizard hot path and transmit.
     // See also: note in PERFORMANCE section of comments.
     let cachedProgress, cachedStepLabel, cachedTransmitBtn, cachedNameInput, cachedContactInput;
+
+    function isNetworkFetchFailure(err) {
+        if (!err) return false;
+        const msg = String(err.message || '');
+        return err.name === 'TypeError' && (
+            msg.includes('Failed to fetch') ||
+            msg.includes('NetworkError') ||
+            msg.includes('Load failed')
+        );
+    }
+
+    function networkFailureMessage() {
+        return 'Cannot reach the registry API. Check your network connection — some networks block Cloudflare Workers (*.workers.dev). Try another connection or contact the registry operator.';
+    }
 
     /* === Resilience helper (AbortController + timeout, non-visual) === */
     async function fetchWithTimeout(resource, options = {}, timeoutMs = 15000) {
@@ -769,7 +783,7 @@
             headers: { Accept: 'application/json' },
             cache: 'no-store'
         }, 15000);
-        if (!res.ok) throw new Error('Could not reach registry key endpoint');
+        if (!res.ok) throw new Error(`Could not reach registry key endpoint (${res.status})`);
         const data = await res.json();
         if (CONFIG.PUBKEY_FINGERPRINT) {
             const fp = await fingerprintPublicJwk(data.publicKey);
@@ -1111,12 +1125,18 @@
                 lastEncryptedPayload = null;
                 const attempts = noteTransmitAttempt();
                 let baseMsg = 'Transmission failed. Data was not sent. Please retry or contact the registry directly.';
-                if (err.message?.includes('429')) {
+                if (isNetworkFetchFailure(err)) {
+                    baseMsg = networkFailureMessage();
+                } else if (err.message?.includes('429')) {
                     baseMsg = 'Registry channel is momentarily constrained. Please wait and retry.';
                 } else if (err.message?.includes('403')) {
                     baseMsg = 'Registry channel declined this submission. Please contact the registry directly.';
+                } else if (err.message?.includes('fingerprint mismatch')) {
+                    baseMsg = 'Registry security check failed. Do not transmit on this connection — contact the registry directly.';
                 } else if (err.message?.includes('Origin not allowed') || err.message?.includes('503')) {
                     baseMsg = 'Registry channel is temporarily unavailable. Please retry shortly.';
+                } else if (err.message?.includes('registry key endpoint')) {
+                    baseMsg = 'Could not verify the registry encryption key. Please retry or contact the registry directly.';
                 }
                 if (attempts >= 3) {
                     baseMsg += ' (Multiple recent attempts detected — waiting 30–60s may help.)';

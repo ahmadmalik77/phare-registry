@@ -64,12 +64,6 @@
 
         body.has-custom-cursor { cursor: none; }
 
-        /* Touch/tablet only — layout can be narrow but desktop mouse keeps gold cursor */
-        @media (pointer: coarse) {
-            body.has-custom-cursor { cursor: auto; }
-            .cur-dot, .cur-ring { display: none !important; }
-        }
-
         body.has-custom-cursor button,
         body.has-custom-cursor .opt,
         body.has-custom-cursor .cta,
@@ -817,6 +811,10 @@
             justify-content: flex-end;
         }
 
+        .restore-actions .cta {
+            margin-top: 0;
+        }
+
         .utility-bar {
             position: absolute;
             bottom: 1.25rem;
@@ -943,7 +941,8 @@
         }
 
         @media (max-width: 1080px) {
-            html, body { overflow-y: auto; height: auto; }
+            html, body { overflow-y: auto; height: auto; cursor: auto; }
+            .cur-dot, .cur-ring { display: none !important; }
             .frame { flex-direction: column; height: auto; min-height: 100svh; }
             .col-left {
                 width: 100%; height: auto;
@@ -972,18 +971,4 @@
             .draft-indicator { top: 0.6rem; right: 2.5rem; }
             .encryption-note { margin-top: 1rem; }
             .utility-bar { right: 2.5rem; bottom: 1rem; }
-        }
-
-        /* Production polish — behavior only; palette and layout unchanged */
-        @media (prefers-reduced-motion: reduce) {
-            html { scroll-behavior: auto; }
-            .cur-dot, .cur-ring { display: none !important; }
-        }
-
-        button, .opt, .cta, .nav-btn, .secure-btn, .clear-data-btn {
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .hero-title, .wordmark, .step-q, .landing-title {
-            text-rendering: optimizeLegibility;
         }

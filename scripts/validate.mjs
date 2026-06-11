@@ -36,6 +36,19 @@ if (index.includes('invitation-only') || index.includes('By invitation only')) {
 if (!index.includes('Content-Security-Policy')) {
     errors.push('index.html missing CSP meta tag for GitHub Pages hardening');
 }
+const metaCsp = index.match(/http-equiv="Content-Security-Policy"\s+content="([^"]+)"/);
+if (metaCsp) {
+    const csp = metaCsp[1];
+    if (csp.includes('frame-ancestors')) {
+        errors.push('index.html meta CSP must not include frame-ancestors (ignored in meta; use deploy/_headers)');
+    }
+    if (csp.includes('style-src') && !csp.includes("'unsafe-inline'")) {
+        errors.push('index.html meta CSP style-src needs unsafe-inline for JS-driven cursor/animations');
+    }
+}
+if (index.match(/style="margin-top:0/)) {
+    errors.push('index.html must not use inline style attributes — use .restore-actions .cta in styles.css');
+}
 const prodHtml = path.join(root, 'index.production.html');
 if (fs.existsSync(prodHtml)) {
     const prod = fs.readFileSync(prodHtml, 'utf8');

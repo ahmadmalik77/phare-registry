@@ -7,7 +7,8 @@
     <meta name="robots" content="noindex, nofollow">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta name="referrer" content="no-referrer">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://phare-intake.ahmadmalik77.workers.dev; frame-ancestors 'none'; base-uri 'self'; form-action 'none'">
+    <!-- CSP via meta: frame-ancestors only works in HTTP headers (see deploy/_headers). style-src unsafe-inline required for cursor/animation JS. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://phare-intake.ahmadmalik77.workers.dev; base-uri 'self'; form-action 'none'">
     <meta name="color-scheme" content="dark">
     <meta name="theme-color" content="#0A1118">
     <title>Phare — The Lighthouse · Registry</title>
@@ -18,7 +19,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&family=Jost:wght@100;200;300;400&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="assets/styles.css?v=20260611h">
+    <link rel="stylesheet" href="assets/styles.css?v=20260611i">
 </head>
 <body>
 
@@ -266,7 +267,7 @@
         <p>A device-encrypted draft from a prior session was found. Restore your progress, or begin fresh.</p>
         <div class="restore-actions">
             <button type="button" class="nav-btn" id="btn-restore-decline">Begin fresh</button>
-            <button type="button" class="cta" id="btn-restore-accept" style="margin-top:0;">Restore draft</button>
+            <button type="button" class="cta" id="btn-restore-accept">Restore draft</button>
         </div>
     </div>
 </div>
@@ -277,12 +278,12 @@
         <p>This removes any saved draft and encryption keys stored locally in this browser. Your current session will reload.</p>
         <div class="restore-actions">
             <button type="button" class="nav-btn" id="btn-clear-cancel">Cancel</button>
-            <button type="button" class="cta" id="btn-clear-confirm" style="margin-top:0;">Clear &amp; reload</button>
+            <button type="button" class="cta" id="btn-clear-confirm">Clear &amp; reload</button>
         </div>
     </div>
 </div>
 
-    <script src="assets/config.js?v=20260611h"></script>
-    <script src="assets/app.js?v=20260611h" defer></script>
+    <script src="assets/config.js?v=20260611i"></script>
+    <script src="assets/app.js?v=20260611i" defer></script>
 </body>
 </html>
