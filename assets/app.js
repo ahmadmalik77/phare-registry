@@ -736,12 +736,13 @@
                 throw new Error('Registry public key fingerprint mismatch — possible interception');
             }
         }
+        /* Public ECDH keys are used as deriveKey peers — empty usages (not ['deriveKey']) */
         return crypto.subtle.importKey(
             'jwk',
             data.publicKey,
             { name: 'ECDH', namedCurve: 'P-256' },
             true,
-            ['deriveKey']
+            []
         );
     }
 
