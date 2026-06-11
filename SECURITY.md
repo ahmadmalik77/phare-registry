@@ -34,4 +34,4 @@ Contact the registry operator through the secure channel on the intake page. Do 
 
 ## Version
 
-`2026.06-production` — see `PROTOCOL.md` and `PHARE_VERSION` in source files.
+`2026.06-production.10` — see `PROTOCOL.md`, `project-context.md`, and `PHARE_VERSION` in source files.
