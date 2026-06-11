@@ -64,9 +64,10 @@
 
         body.has-custom-cursor { cursor: none; }
 
-        /* Touch/tablet only — keep gold custom cursor on resized desktop windows */
-        @media (max-width: 1080px) and (pointer: coarse) {
+        /* Touch/tablet only — layout can be narrow but desktop mouse keeps gold cursor */
+        @media (pointer: coarse) {
             body.has-custom-cursor { cursor: auto; }
+            .cur-dot, .cur-ring { display: none !important; }
         }
 
         body.has-custom-cursor button,
@@ -942,8 +943,7 @@
         }
 
         @media (max-width: 1080px) {
-            html, body { overflow-y: auto; height: auto; cursor: auto; }
-            .cur-dot, .cur-ring { display: none !important; }
+            html, body { overflow-y: auto; height: auto; }
             .frame { flex-direction: column; height: auto; min-height: 100svh; }
             .col-left {
                 width: 100%; height: auto;

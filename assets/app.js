@@ -42,7 +42,7 @@
 
 
     /* === 10/10 internal version (exposed for operators / debugging, no UI impact) === */
-    const PHARE_VERSION = '2026.06-production.4';
+    const PHARE_VERSION = '2026.06-production.5';
 
     /*
      * PRODUCTION HARDENING (GitHub Pages host + Cloudflare Worker API):
@@ -79,7 +79,8 @@
      * @returns {HTMLElement|null}
      */
     const el = id => document.getElementById(id);
-    const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
+    const finePointerQuery = window.matchMedia('(pointer: fine)');
+    const hasFinePointer = () => finePointerQuery.matches;
 
     // Pre-cache a few hot elements for minor perf (non-visual)
     // This reduces repeated getElementById in the wizard hot path and transmit.
@@ -800,16 +801,26 @@
         };
     }
 
+    function syncCustomCursorElements() {
+        const dot = el('cur-dot');
+        const ring = el('cur-ring');
+        if (!dot || !ring) return;
+        if (document.body.classList.contains('has-custom-cursor')) {
+            dot.style.removeProperty('display');
+            ring.style.removeProperty('display');
+        }
+    }
+
     function initCustomCursor() {
-        if (!hasFinePointer || prefersReducedMotion || customCursorInitialized) return;
+        if (!hasFinePointer() || prefersReducedMotion || customCursorInitialized) return;
         customCursorInitialized = true;
         document.body.classList.add('has-custom-cursor');
         const dot = el('cur-dot');
         const ring = el('cur-ring');
+        syncCustomCursorElements();
         let ringX = 0, ringY = 0, dotX = 0, dotY = 0;
         let cursorInitialized = false;
-        let resizeCooldown = false;
-        let resizeCooldownTimer = null;
+        let resizeTimer = null;
 
         document.addEventListener('mousemove', e => {
             if (!cursorInitialized) {
@@ -836,21 +847,9 @@
             requestAnimationFrame(trackRing);
         })();
 
-        document.addEventListener('mouseleave', e => {
-            if (resizeCooldown) return;
-            if (!e.relatedTarget && e.clientY <= 0) {
-                dot.classList.add('cur-hidden');
-                ring.classList.add('cur-hidden');
-            }
-        });
-        document.addEventListener('mouseenter', () => {
-            dot.classList.remove('cur-hidden');
-            ring.classList.remove('cur-hidden');
-        });
-
         window.addEventListener('resize', () => {
-            resizeCooldown = true;
-            clearTimeout(resizeCooldownTimer);
+            clearTimeout(resizeTimer);
+            syncCustomCursorElements();
             dot.classList.remove('cur-hidden');
             ring.classList.remove('cur-hidden');
             if (cursorInitialized) {
@@ -861,9 +860,7 @@
                 ring.style.left = ringX + 'px';
                 ring.style.top = ringY + 'px';
             }
-            resizeCooldownTimer = setTimeout(() => {
-                resizeCooldown = false;
-            }, 350);
+            resizeTimer = setTimeout(syncCustomCursorElements, 100);
         });
 
         if (!prefersReducedMotion) {
