@@ -42,7 +42,7 @@
 
 
     /* === 10/10 internal version (exposed for operators / debugging, no UI impact) === */
-    const PHARE_VERSION = '2026.06-production.3';
+    const PHARE_VERSION = '2026.06-production.4';
 
     /*
      * PRODUCTION HARDENING (GitHub Pages host + Cloudflare Worker API):
@@ -853,11 +853,17 @@
             clearTimeout(resizeCooldownTimer);
             dot.classList.remove('cur-hidden');
             ring.classList.remove('cur-hidden');
-            document.body.classList.add('cursor-fallback');
+            if (cursorInitialized) {
+                dot.style.opacity = '0.85';
+                ring.style.opacity = '1';
+                dot.style.left = dotX + 'px';
+                dot.style.top = dotY + 'px';
+                ring.style.left = ringX + 'px';
+                ring.style.top = ringY + 'px';
+            }
             resizeCooldownTimer = setTimeout(() => {
                 resizeCooldown = false;
-                document.body.classList.remove('cursor-fallback');
-            }, 400);
+            }, 350);
         });
 
         if (!prefersReducedMotion) {

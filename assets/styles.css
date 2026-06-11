@@ -64,17 +64,8 @@
 
         body.has-custom-cursor { cursor: none; }
 
-        /* During window resize, show the native pointer so it never disappears */
-        body.has-custom-cursor.cursor-fallback,
-        body.has-custom-cursor.cursor-fallback button,
-        body.has-custom-cursor.cursor-fallback .opt,
-        body.has-custom-cursor.cursor-fallback .cta,
-        body.has-custom-cursor.cursor-fallback .nav-btn,
-        body.has-custom-cursor.cursor-fallback .secure-btn {
-            cursor: auto !important;
-        }
-
-        @media (max-width: 1080px) {
+        /* Touch/tablet only — keep gold custom cursor on resized desktop windows */
+        @media (max-width: 1080px) and (pointer: coarse) {
             body.has-custom-cursor { cursor: auto; }
         }
 
