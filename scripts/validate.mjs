@@ -60,7 +60,12 @@ if (fs.existsSync(path.join(root, 'decrypt.html'))) {
     errors.push('decrypt.html must not be at public root — use operator/decrypt.html');
 }
 
+const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const app = fs.readFileSync(path.join(root, 'assets', 'app.js'), 'utf8');
+const verMatch = app.match(/PHARE_VERSION = '([^']+)'/);
+if (!verMatch || verMatch[1] !== pkg.version) {
+    errors.push(`Version drift: package.json ${pkg.version} vs assets/app.js ${verMatch?.[1] || 'missing'}`);
+}
 if (app.includes('workerBlobUrl')) errors.push('assets/app.js must not reference workerBlobUrl');
 if (app.includes('window.PhareRegistry')) errors.push('assets/app.js must not expose window.PhareRegistry');
 if (app.match(/crypto:\s*Object\.freeze/)) errors.push('assets/app.js must not expose crypto on public API');

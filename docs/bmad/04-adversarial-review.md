@@ -3,7 +3,7 @@
 **Workflow:** `bmad-review-adversarial-general`  
 **Subject:** `b5d700c` + live deployment  
 **Date:** 2026-06-11  
-**Prior score:** 9.1/10 · **Current:** certified 10/10
+**Prior score:** 9.1/10 · **v11:** 10/10 · **v12 (CSP fix):** certified 10/10
 
 ---
 
@@ -48,6 +48,14 @@
 
 ---
 
+## v12 CSP adversarial checks
+
+13. **Meta frame-ancestors noise** — Removed; warning eliminated. ✅  
+14. **JS style mutations blocked** — unsafe-inline in meta CSP. ✅  
+15. **Network failure opaque** — `isNetworkFetchFailure()` user message. ✅  
+16. **cloudflare-csp.md drift** — Aligned with `_headers`. ✅  
+17. **Grok Builder audit gap** — `npm run audit` added. ✅  
+
 ## Adversarial verdict
 
-**0 blocking findings.** Production v11 certified at **10/10** per `05-production-certification.md`.
+**0 blocking findings.** Production v12 certified at **10/10** per `05-production-certification.md` and `08-extensive-audit-v12.md`.

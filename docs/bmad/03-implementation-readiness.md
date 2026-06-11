@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-11  
 **Workflow:** `bmad-check-implementation-readiness` (brownfield)  
-**Version:** `2026.06-production.11` · **Commit:** `b5d700c`
+**Version:** `2026.06-production.12` · **Commit:** `d64adb2`
 
 ---
 
@@ -35,8 +35,9 @@ Brownfield: **implemented artifacts + spec are source of truth.**
 | G10 | Reproducible build | ✅ PASS | cache-bust regex fixed |
 | G11 | CSP/HSTS posture | ✅ PASS | CSP meta + `deploy/_headers` |
 | G12 | Luxury UX + a11y | ✅ PASS | Unchanged design |
+| G13 | CSP functional (meta) | ✅ PASS | No frame-ancestors in meta; unsafe-inline; no inline HTML styles |
 
-**Score: 12/12 gates PASS**
+**Score: 13/13 gates PASS**
 
 ---
 

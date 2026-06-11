@@ -141,6 +141,7 @@ Built-in sample roundtrip: **Generate Sample Keypair + Test Roundtrip**.
 | `npm run build` | Rebuild `index.html` + `assets/app.js` from source |
 | `npm test` | Crypto roundtrip tests |
 | `npm run validate` | Production structure checks |
+| `npm run audit` | Full BMad/Grok audit (CI + version/CSP sync) |
 | `npm run setup` | Interactive `config.js` creation |
 
 Monolith backup: `archive/index.monolith.html`
