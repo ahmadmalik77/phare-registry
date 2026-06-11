@@ -20,14 +20,16 @@ const intake = {
 };
 
 const enc = await encryptForRegistry(intake, pub);
+const invite = process.env.PHARE_INVITE || 'Ni01PIaBGTkLAsU3YF9K8ugmNUpNp7LR';
 const res = await fetch('https://phare-intake.ahmadmalik77.workers.dev/api/intake', {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        Origin: 'https://ahmadmalik77.github.io'
+        Origin: 'https://ahmadmalik77.github.io',
+        'X-Phare-Invite': invite
     },
-    body: JSON.stringify({ ...enc, website: '' })
+    body: JSON.stringify({ ...enc, b_hp_x7k9: '' })
 });
 
 console.log('POST', res.status, await res.text());
