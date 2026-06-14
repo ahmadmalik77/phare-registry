@@ -42,7 +42,7 @@
 
 
     /* === 10/10 internal version (exposed for operators / debugging, no UI impact) === */
-    const PHARE_VERSION = '2026.06-production.16';
+    const PHARE_VERSION = '2026.06-production.17';
 
     /*
      * PRODUCTION HARDENING (GitHub Pages host + Cloudflare Worker API):
@@ -163,24 +163,29 @@
     };
 
     /* === 3. CRYPTO (Drafts via inline Worker + ECDH for real registry intake) === */
-        const cryptoWorker = new Worker('assets/draft-crypto-worker.js');
+    let cryptoWorker = null;
     let workerCallId = 0;
     const pendingResolvers = new Map();
     let lastFocusedBeforeModal = null;
 
-    cryptoWorker.onmessage = function (e) {
-        const { id, success, result, error } = e.data;
-        const pending = pendingResolvers.get(id);
-        if (!pending) return;
-        pendingResolvers.delete(id);
-        success ? pending.resolve(result) : pending.reject(new Error(error));
-    };
+    function getCryptoWorker() {
+        if (cryptoWorker) return cryptoWorker;
+        cryptoWorker = new Worker('assets/draft-crypto-worker.js');
+        cryptoWorker.onmessage = function (e) {
+            const { id, success, result, error } = e.data;
+            const pending = pendingResolvers.get(id);
+            if (!pending) return;
+            pendingResolvers.delete(id);
+            success ? pending.resolve(result) : pending.reject(new Error(error));
+        };
+        return cryptoWorker;
+    }
 
     function runCryptoTask(action, payload, passphrase) {
         return new Promise((resolve, reject) => {
             const id = ++workerCallId;
             pendingResolvers.set(id, { resolve, reject });
-            cryptoWorker.postMessage({ id, action, payload, passphrase });
+            getCryptoWorker().postMessage({ id, action, payload, passphrase });
         });
     }
 
@@ -1311,7 +1316,7 @@
     cachedContactInput = el('a7_contact');
 
     window.addEventListener('beforeunload', () => {
-        cryptoWorker.terminate();
+        cryptoWorker?.terminate();
     });
 
     if (!crypto?.subtle) {
@@ -1324,7 +1329,5 @@
         }, 600);
     }
 
-    requestAnimationFrame(() => {
-        setTimeout(dismissInitLoader, 320);
-    });
+    dismissInitLoader();
 })();

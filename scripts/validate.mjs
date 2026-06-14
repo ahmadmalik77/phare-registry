@@ -27,9 +27,10 @@ if (index.includes('<style>') && index.includes('const CONFIG')) {
     errors.push('index.html still contains inline monolith — run npm run build');
 }
 if (!index.includes('assets/styles.css')) errors.push('index.html must link assets/styles.css');
-if (!index.includes('assets/fonts.css')) errors.push('index.html must link assets/fonts.css (self-hosted fonts)');
-if (!fs.existsSync(path.join(root, 'assets', 'fonts.css'))) errors.push('Missing assets/fonts.css');
-if (index.includes('fonts.googleapis.com')) errors.push('index.html must not load Google Fonts CDN — use assets/fonts.css');
+const styles = fs.readFileSync(path.join(root, 'assets', 'styles.css'), 'utf8');
+if (!styles.includes('@font-face')) errors.push('assets/styles.css must include self-hosted @font-face fonts');
+if (index.includes('fonts.googleapis.com')) errors.push('index.html must not load Google Fonts CDN');
+if (index.includes('assets/fonts.css')) errors.push('index.html must not link separate fonts.css — fonts are in styles.css');
 if (!index.includes('assets/config.js')) errors.push('index.html must load assets/config.js');
 if (!index.includes('<main class="frame">')) errors.push('index.html missing intake wizard markup');
 if (!index.includes('id="a7_hp_trap"')) errors.push('index.html missing honeypot field a7_hp_trap');

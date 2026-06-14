@@ -47,8 +47,8 @@ const html = `${head}
 
 ${body}
 
-    <script src="assets/config.js?v=20260614c"></script>
-    <script src="assets/app.js?v=20260614c" defer></script>
+    <script src="assets/config.js?v=20260615a"></script>
+    <script src="assets/app.js?v=20260615a" defer></script>
 </body>
 </html>
 `;

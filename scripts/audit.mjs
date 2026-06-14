@@ -44,8 +44,10 @@ if (!metaCsp) {
     }
 }
 
-if (!index.includes('assets/fonts.css')) errors.push('index.html must link assets/fonts.css');
+const styles = read('assets/styles.css');
+if (!styles.includes('@font-face')) errors.push('assets/styles.css must include self-hosted @font-face fonts');
 if (index.includes('fonts.googleapis.com')) errors.push('index.html must not reference Google Fonts CDN');
+if (index.includes('assets/fonts.css')) errors.push('index.html must not link separate fonts.css');
 
 if (index.match(/style="margin-top/)) errors.push('index.html has forbidden inline style attributes');
 if (app.includes('window.PhareRegistry')) errors.push('app.js exposes window.PhareRegistry');
