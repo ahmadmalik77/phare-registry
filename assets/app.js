@@ -42,7 +42,7 @@
 
 
     /* === 10/10 internal version (exposed for operators / debugging, no UI impact) === */
-    const PHARE_VERSION = '2026.06-production.15';
+    const PHARE_VERSION = '2026.06-production.16';
 
     /*
      * PRODUCTION HARDENING (GitHub Pages host + Cloudflare Worker API):
@@ -79,9 +79,6 @@
      * @returns {HTMLElement|null}
      */
     const el = id => document.getElementById(id);
-    const finePointerQuery = window.matchMedia('(pointer: fine)');
-    const hasFinePointer = () => finePointerQuery.matches;
-
     // Pre-cache a few hot elements for minor perf (non-visual)
     // This reduces repeated getElementById in the wizard hot path and transmit.
     // See also: note in PERFORMANCE section of comments.
@@ -153,8 +150,6 @@
     let draftSaveTimer = null;
     let pendingDraft = null;
     let hasTransmitted = false;
-    const CURSOR_MIN_WIDTH = 1081;
-    const desktopLayoutQuery = window.matchMedia(`(min-width: ${CURSOR_MIN_WIDTH}px)`);
     const cursorState = {
         coreReady: false,
         active: false,
@@ -839,10 +834,6 @@
         };
     }
 
-    function shouldUseCustomCursor() {
-        return hasFinePointer() && !prefersReducedMotion && desktopLayoutQuery.matches;
-    }
-
     function clampCursorPosition() {
         const maxX = Math.max(0, window.innerWidth - 1);
         const maxY = Math.max(0, window.innerHeight - 1);
@@ -896,12 +887,12 @@
     }
 
     function updateCustomCursorMode() {
-        if (!hasFinePointer() || prefersReducedMotion) {
+        if (prefersReducedMotion) {
             if (cursorState.coreReady) setCustomCursorActive(false);
             return;
         }
         if (!cursorState.coreReady) initCustomCursorCore();
-        setCustomCursorActive(shouldUseCustomCursor());
+        setCustomCursorActive(true);
     }
 
     function onCustomCursorMove(e) {
@@ -968,13 +959,12 @@
         const ring = el('cur-ring');
         if (!dot || !ring) return;
 
-        document.addEventListener('mousemove', onCustomCursorMove, { passive: true });
+        document.addEventListener('pointermove', onCustomCursorMove, { passive: true });
+        document.addEventListener('pointerdown', onCustomCursorMove, { passive: true });
         document.documentElement.addEventListener('mouseleave', onCustomCursorLeave);
         document.documentElement.addEventListener('mouseenter', onCustomCursorEnter);
         window.addEventListener('resize', onCustomCursorResize, { passive: true });
         window.addEventListener('orientationchange', onCustomCursorResize, { passive: true });
-        desktopLayoutQuery.addEventListener('change', updateCustomCursorMode);
-        finePointerQuery.addEventListener('change', updateCustomCursorMode);
 
         requestAnimationFrame(trackCustomCursorRing);
 

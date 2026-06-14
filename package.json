@@ -1,6 +1,6 @@
 {
   "name": "phare-registry",
-  "version": "2026.06-production.15",
+  "version": "2026.06-production.16",
   "private": true,
   "type": "module",
   "description": "Phare — The Lighthouse. Private UHNWI executive intake registry.",
