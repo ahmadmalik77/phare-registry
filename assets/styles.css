@@ -994,6 +994,13 @@
 
         @media (max-width: 1080px) {
             html, body { overflow-y: auto; height: auto; cursor: auto; letter-spacing: 0.05em; }
+            body.has-custom-cursor,
+            body.has-custom-cursor button,
+            body.has-custom-cursor .opt,
+            body.has-custom-cursor .cta,
+            body.has-custom-cursor .nav-btn,
+            body.has-custom-cursor .secure-btn,
+            body.has-custom-cursor .text-input { cursor: auto !important; }
             .cur-dot, .cur-ring { display: none !important; }
             .frame { flex-direction: column; height: auto; min-height: 100svh; }
             .col-left {

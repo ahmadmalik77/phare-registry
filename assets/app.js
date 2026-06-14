@@ -42,7 +42,7 @@
 
 
     /* === 10/10 internal version (exposed for operators / debugging, no UI impact) === */
-    const PHARE_VERSION = '2026.06-production.13';
+    const PHARE_VERSION = '2026.06-production.14';
 
     /*
      * PRODUCTION HARDENING (GitHub Pages host + Cloudflare Worker API):
@@ -153,7 +153,18 @@
     let draftSaveTimer = null;
     let pendingDraft = null;
     let hasTransmitted = false;
-    let customCursorInitialized = false;
+    const CURSOR_MIN_WIDTH = 1081;
+    const desktopLayoutQuery = window.matchMedia(`(min-width: ${CURSOR_MIN_WIDTH}px)`);
+    const cursorState = {
+        coreReady: false,
+        active: false,
+        visible: false,
+        dotX: 0,
+        dotY: 0,
+        ringX: 0,
+        ringY: 0,
+        resizeTimer: null
+    };
 
     /* === 3. CRYPTO (Drafts via inline Worker + ECDH for real registry intake) === */
         const cryptoWorker = new Worker('assets/draft-crypto-worker.js');
@@ -827,84 +838,162 @@
         };
     }
 
+    function shouldUseCustomCursor() {
+        return hasFinePointer() && !prefersReducedMotion && desktopLayoutQuery.matches;
+    }
+
+    function clampCursorPosition() {
+        const maxX = Math.max(0, window.innerWidth - 1);
+        const maxY = Math.max(0, window.innerHeight - 1);
+        cursorState.dotX = Math.min(Math.max(cursorState.dotX, 0), maxX);
+        cursorState.dotY = Math.min(Math.max(cursorState.dotY, 0), maxY);
+        cursorState.ringX = Math.min(Math.max(cursorState.ringX, 0), maxX);
+        cursorState.ringY = Math.min(Math.max(cursorState.ringY, 0), maxY);
+    }
+
     function syncCustomCursorElements() {
         const dot = el('cur-dot');
         const ring = el('cur-ring');
+        if (!dot || !ring || !cursorState.active) return;
+        dot.style.removeProperty('display');
+        ring.style.removeProperty('display');
+        clampCursorPosition();
+        dot.style.left = cursorState.dotX + 'px';
+        dot.style.top = cursorState.dotY + 'px';
+        ring.style.left = cursorState.ringX + 'px';
+        ring.style.top = cursorState.ringY + 'px';
+    }
+
+    function setCustomCursorVisible(visible) {
+        const dot = el('cur-dot');
+        const ring = el('cur-ring');
         if (!dot || !ring) return;
-        if (document.body.classList.contains('has-custom-cursor')) {
-            dot.style.removeProperty('display');
-            ring.style.removeProperty('display');
+        cursorState.visible = visible;
+        if (!cursorState.active) {
+            dot.classList.add('cur-hidden');
+            ring.classList.add('cur-hidden');
+            return;
+        }
+        dot.classList.toggle('cur-hidden', !visible);
+        ring.classList.toggle('cur-hidden', !visible);
+        if (visible) {
+            dot.style.opacity = '0.85';
+            ring.style.opacity = '1';
         }
     }
 
-    function initCustomCursor() {
-        if (!hasFinePointer() || prefersReducedMotion || customCursorInitialized) return;
-        customCursorInitialized = true;
-        document.body.classList.add('has-custom-cursor');
+    function setCustomCursorActive(active) {
+        cursorState.active = active;
+        document.body.classList.toggle('has-custom-cursor', active);
+        if (!active) {
+            clearCursorHover();
+            setCustomCursorVisible(false);
+            return;
+        }
+        syncCustomCursorElements();
+        setCustomCursorVisible(cursorState.visible);
+    }
+
+    function updateCustomCursorMode() {
+        if (!cursorState.coreReady) {
+            if (shouldUseCustomCursor()) initCustomCursorCore();
+            return;
+        }
+        setCustomCursorActive(shouldUseCustomCursor());
+    }
+
+    function onCustomCursorMove(e) {
+        if (!cursorState.active) return;
         const dot = el('cur-dot');
         const ring = el('cur-ring');
-        syncCustomCursorElements();
-        let ringX = 0, ringY = 0, dotX = 0, dotY = 0;
-        let cursorInitialized = false;
-        let resizeTimer = null;
+        if (!dot || !ring) return;
+        if (!cursorState.visible) setCustomCursorVisible(true);
+        cursorState.dotX = e.clientX;
+        cursorState.dotY = e.clientY;
+        dot.style.left = cursorState.dotX + 'px';
+        dot.style.top = cursorState.dotY + 'px';
 
-        document.addEventListener('mousemove', e => {
-            if (!cursorInitialized) {
-                dot.style.opacity = '0.85';
-                ring.style.opacity = '1';
-                cursorInitialized = true;
-            }
-            dotX = e.clientX;
-            dotY = e.clientY;
-            dot.style.left = dotX + 'px';
-            dot.style.top = dotY + 'px';
+        const hoverTarget = e.target.closest('button, .opt, .cta, .nav-btn, .secure-btn, .text-input');
+        const interactive = hoverTarget && getComputedStyle(hoverTarget).pointerEvents !== 'none';
+        dot.classList.toggle('hov', interactive);
+        ring.classList.toggle('hov', interactive);
+    }
 
-            const hoverTarget = e.target.closest('button, .opt, .cta, .nav-btn, .secure-btn, .text-input');
-            const interactive = hoverTarget && getComputedStyle(hoverTarget).pointerEvents !== 'none';
-            dot.classList.toggle('hov', interactive);
-            ring.classList.toggle('hov', interactive);
-        });
+    function onCustomCursorLeave() {
+        if (cursorState.active) setCustomCursorVisible(false);
+    }
 
-        (function trackRing() {
-            ringX += (dotX - ringX) * 0.14;
-            ringY += (dotY - ringY) * 0.14;
-            ring.style.left = ringX + 'px';
-            ring.style.top = ringY + 'px';
-            requestAnimationFrame(trackRing);
-        })();
+    function onCustomCursorEnter() {
+        if (cursorState.active && (cursorState.dotX > 0 || cursorState.dotY > 0)) {
+            setCustomCursorVisible(true);
+        }
+    }
 
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimer);
+    function onCustomCursorResize() {
+        clearTimeout(cursorState.resizeTimer);
+        clampCursorPosition();
+        updateCustomCursorMode();
+        if (cursorState.active) {
             syncCustomCursorElements();
-            dot.classList.remove('cur-hidden');
-            ring.classList.remove('cur-hidden');
-            if (cursorInitialized) {
-                dot.style.opacity = '0.85';
-                ring.style.opacity = '1';
-                dot.style.left = dotX + 'px';
-                dot.style.top = dotY + 'px';
-                ring.style.left = ringX + 'px';
-                ring.style.top = ringY + 'px';
-            }
-            resizeTimer = setTimeout(syncCustomCursorElements, 100);
-        });
+            if (cursorState.visible) setCustomCursorVisible(true);
+        }
+        cursorState.resizeTimer = setTimeout(() => {
+            updateCustomCursorMode();
+            if (cursorState.active) syncCustomCursorElements();
+        }, 120);
+    }
+
+    function trackCustomCursorRing() {
+        const ring = el('cur-ring');
+        if (cursorState.active && ring) {
+            cursorState.ringX += (cursorState.dotX - cursorState.ringX) * 0.14;
+            cursorState.ringY += (cursorState.dotY - cursorState.ringY) * 0.14;
+            ring.style.left = cursorState.ringX + 'px';
+            ring.style.top = cursorState.ringY + 'px';
+        }
+        requestAnimationFrame(trackCustomCursorRing);
+    }
+
+    function initCustomCursorCore() {
+        if (cursorState.coreReady) return;
+        cursorState.coreReady = true;
+
+        const dot = el('cur-dot');
+        const ring = el('cur-ring');
+        if (!dot || !ring) return;
+
+        document.addEventListener('mousemove', onCustomCursorMove, { passive: true });
+        document.documentElement.addEventListener('mouseleave', onCustomCursorLeave);
+        document.documentElement.addEventListener('mouseenter', onCustomCursorEnter);
+        window.addEventListener('resize', onCustomCursorResize, { passive: true });
+        window.addEventListener('orientationchange', onCustomCursorResize, { passive: true });
+        desktopLayoutQuery.addEventListener('change', updateCustomCursorMode);
+        finePointerQuery.addEventListener('change', updateCustomCursorMode);
+
+        requestAnimationFrame(trackCustomCursorRing);
+        setCustomCursorActive(shouldUseCustomCursor());
 
         if (!prefersReducedMotion) {
             const leftCol = el('col-left');
             const ghostP = document.querySelector('.ghost-p');
-            leftCol.addEventListener('mousemove', e => {
-                const r = leftCol.getBoundingClientRect();
-                const x = (e.clientX - r.left) / r.width - 0.5;
-                const y = (e.clientY - r.top) / r.height - 0.5;
-                /* Parallax on decorative ghost only — never transform readable hero copy */
-                if (ghostP) {
-                    ghostP.style.transform = `translate(${Math.round(x * 14)}px, ${Math.round(y * 10)}px)`;
-                }
-            });
-            leftCol.addEventListener('mouseleave', () => {
-                if (ghostP) ghostP.style.transform = 'translate(0, 0)';
-            });
+            if (leftCol) {
+                leftCol.addEventListener('mousemove', e => {
+                    const r = leftCol.getBoundingClientRect();
+                    const x = (e.clientX - r.left) / r.width - 0.5;
+                    const y = (e.clientY - r.top) / r.height - 0.5;
+                    if (ghostP) {
+                        ghostP.style.transform = `translate(${Math.round(x * 14)}px, ${Math.round(y * 10)}px)`;
+                    }
+                });
+                leftCol.addEventListener('mouseleave', () => {
+                    if (ghostP) ghostP.style.transform = 'translate(0, 0)';
+                });
+            }
         }
+    }
+
+    function initCustomCursor() {
+        updateCustomCursorMode();
     }
 
     function dismissInitLoader() {
@@ -1205,12 +1294,10 @@
     motionQuery.addEventListener('change', () => {
         applyMotionPreference();
         if (prefersReducedMotion) {
-            document.body.classList.remove('has-custom-cursor');
             const ghostP = document.querySelector('.ghost-p');
             if (ghostP) ghostP.style.transform = 'translate(0, 0)';
-        } else {
-            initCustomCursor();
         }
+        updateCustomCursorMode();
     });
 
     // applyDemoMode() removed (production build)
