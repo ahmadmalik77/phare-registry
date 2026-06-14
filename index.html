@@ -8,18 +8,17 @@
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta name="referrer" content="no-referrer">
     <!-- CSP via meta: frame-ancestors only works in HTTP headers (see deploy/_headers). style-src unsafe-inline required for cursor/animation JS. -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://phare-intake.ahmadmalik77.workers.dev; base-uri 'self'; form-action 'none'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://phare-intake.ahmadmalik77.workers.dev; base-uri 'self'; form-action 'none'">
     <meta name="color-scheme" content="dark">
     <meta name="theme-color" content="#0A1118">
     <title>Phare — The Lighthouse · Registry</title>
 
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230A1118'/%3E%3Ctext x='16' y='22' font-family='Georgia,serif' font-size='18' font-style='italic' fill='%23C8A96A' text-anchor='middle'%3EP%3C/text%3E%3C/svg%3E">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&family=Jost:wght@100;200;300;400&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet" href="assets/styles.css?v=20260611i">
+    <link rel="preload" href="assets/fonts/jost-latin-200-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="assets/fonts/playfair-display-latin-400-italic.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="assets/fonts.css?v=20260612a">
+    <link rel="stylesheet" href="assets/styles.css?v=20260612a">
 </head>
 <body>
 
@@ -70,7 +69,8 @@
                 Operational capacity is restricted.<br>
                 Establish a clearance handshake to proceed.
             </p>
-            <button type="button" class="cta" id="btn-initiate">Initiate Ingest</button>
+            <p class="landing-hint">Seven brief steps — encrypted before it leaves your device.</p>
+            <button type="button" class="cta" id="btn-initiate">Begin Intake</button>
         </div>
 
         <div id="panel-intake" class="panel off" aria-hidden="true">
@@ -97,7 +97,8 @@
 
             <div class="step on" id="s1" data-step="1">
                 <h3 class="step-q" id="q1" tabindex="-1">Operational visibility?</h3>
-                <div role="radiogroup" aria-labelledby="q1">
+                <p class="step-hint" id="q1-hint">How you operate in the world — governance, public profile, or capital.</p>
+                <div role="radiogroup" aria-labelledby="q1" aria-describedby="q1-hint">
                     <button type="button" class="opt" role="radio" aria-checked="false" data-value="corp">Corporate Governance</button>
                     <button type="button" class="opt" role="radio" aria-checked="false" data-value="pub">Public Exposure Footprint</button>
                     <button type="button" class="opt" role="radio" aria-checked="false" data-value="cap">Capital Architecture</button>
@@ -111,7 +112,8 @@
 
             <div class="step" id="s2" data-step="2">
                 <h3 class="step-q" id="q2" tabindex="-1">Where does weight concentrate?</h3>
-                <div role="radiogroup" aria-labelledby="q2">
+                <p class="step-hint" id="q2-hint">What weighs on you most at this moment.</p>
+                <div role="radiogroup" aria-labelledby="q2" aria-describedby="q2-hint">
                     <button type="button" class="opt" role="radio" aria-checked="false" data-value="fatigue">Executive Fatigue</button>
                     <button type="button" class="opt" role="radio" aria-checked="false" data-value="stigma">Isolation Stigma</button>
                     <button type="button" class="opt" role="radio" aria-checked="false" data-value="crisis">Crisis Containment</button>
@@ -125,7 +127,8 @@
 
             <div class="step" id="s3" data-step="3">
                 <h3 class="step-q" id="q3" tabindex="-1">Structural access point?</h3>
-                <div role="radiogroup" aria-labelledby="q3">
+                <p class="step-hint" id="q3-hint">Where counsel would meet you — in person, mobile, or digital.</p>
+                <div role="radiogroup" aria-labelledby="q3" aria-describedby="q3-hint">
                     <button type="button" class="opt" role="radio" aria-checked="false" data-value="lounge">The Café Lounge</button>
                     <button type="button" class="opt" role="radio" aria-checked="false" data-value="mobile">Mobile Sanctuary Concierge</button>
                     <button type="button" class="opt" role="radio" aria-checked="false" data-value="digital">Encrypted Digital Node</button>
@@ -139,7 +142,8 @@
 
             <div class="step" id="s4" data-step="4">
                 <h3 class="step-q" id="q4" tabindex="-1">What creates the most pressure today?</h3>
-                <div role="radiogroup" aria-labelledby="q4">
+                <p class="step-hint" id="q4-hint">The primary source of strain in your life right now.</p>
+                <div role="radiogroup" aria-labelledby="q4" aria-describedby="q4-hint">
                     <button type="button" class="opt" role="radio" aria-checked="false" data-value="leadership">Leadership responsibilities</button>
                     <button type="button" class="opt" role="radio" aria-checked="false" data-value="visibility">Public visibility</button>
                     <button type="button" class="opt" role="radio" aria-checked="false" data-value="financial">Financial decisions</button>
@@ -153,7 +157,8 @@
 
             <div class="step" id="s5" data-step="5">
                 <h3 class="step-q" id="q5" tabindex="-1">What would bring the greatest relief?</h3>
-                <div role="radiogroup" aria-labelledby="q5">
+                <p class="step-hint" id="q5-hint">What meaningful support would feel right for you.</p>
+                <div role="radiogroup" aria-labelledby="q5" aria-describedby="q5-hint">
                     <button type="button" class="opt" role="radio" aria-checked="false" data-value="clarity">Strategic clarity</button>
                     <button type="button" class="opt" role="radio" aria-checked="false" data-value="support">Confidential support</button>
                     <button type="button" class="opt" role="radio" aria-checked="false" data-value="space">Protected thinking space</button>
@@ -167,7 +172,8 @@
 
             <div class="step" id="s6" data-step="6">
                 <h3 class="step-q" id="q6" tabindex="-1">How would you prefer to begin?</h3>
-                <div role="radiogroup" aria-labelledby="q6">
+                <p class="step-hint" id="q6-hint">Your preferred first point of contact.</p>
+                <div role="radiogroup" aria-labelledby="q6" aria-describedby="q6-hint">
                     <button type="button" class="opt" role="radio" aria-checked="false" data-value="call">Private conversation</button>
                     <button type="button" class="opt" role="radio" aria-checked="false" data-value="written">Written exchange first</button>
                 </div>
@@ -180,6 +186,7 @@
 
             <div class="step" id="s7" data-step="7">
                 <h3 class="step-q" id="q7" tabindex="-1">Establish Designation</h3>
+                <p class="step-hint" id="q7-hint">How we may address you and reach you privately.</p>
 
                 <!-- Production honeypot: hidden from users; backend must reject if filled -->
                 <div class="hp-field" aria-hidden="true">
@@ -215,7 +222,7 @@
                 </div>
 
                 <p class="production-note" id="production-note">
-                    Secured via ECDH key agreement with the Phare registry API on Cloudflare.
+                    Encrypted on your device before transmission to the registry.
                 </p>
                 <p id="transmit-error" class="status-banner" role="alert"></p>
             </div>
@@ -237,19 +244,22 @@
                 quietest channels.
             </p>
 
-            <p class="encryption-note" id="encryption-note">
-                Intake encrypted client-side via ECDH + AES-256-GCM before transmission<br>
-                to the Phare registry API. Zero-retention enforced server-side.
+            <p class="success-closing" id="success-closing">
+                You may close this window. If alignment confirms,<br>
+                we will reach you through the quietest channels.
             </p>
 
-            <div class="secure-actions">
+            <p class="encryption-note" id="encryption-note" aria-hidden="true">
+                Intake encrypted client-side before transmission. Zero-retention enforced server-side.
+            </p>
+
+            <div class="secure-actions" id="secure-actions-fallback" aria-hidden="true">
                 <button type="button" class="secure-btn" id="btn-copy-payload" disabled>
-                    Copy AES-256-GCM encrypted payload
+                    Copy encrypted backup
                 </button>
                 <button type="button" class="secure-btn" id="btn-open-channel" disabled>
-                    Open secure transmission channel
+                    Retry transmission
                 </button>
-                <!-- demo-only button removed for production build -->
             </div>
         </div>
 
@@ -283,7 +293,7 @@
     </div>
 </div>
 
-    <script src="assets/config.js?v=20260611i"></script>
-    <script src="assets/app.js?v=20260611i" defer></script>
+    <script src="assets/config.js?v=20260612a"></script>
+    <script src="assets/app.js?v=20260612a" defer></script>
 </body>
 </html>

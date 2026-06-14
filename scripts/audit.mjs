@@ -39,7 +39,13 @@ if (!metaCsp) {
     if (csp.includes('frame-ancestors')) errors.push('Meta CSP must not include frame-ancestors');
     if (!csp.includes("'unsafe-inline'")) errors.push('Meta CSP style-src needs unsafe-inline');
     if (!csp.includes('phare-intake')) errors.push('Meta CSP connect-src missing worker origin');
+    if (csp.includes('fonts.googleapis.com') || csp.includes('fonts.gstatic.com')) {
+        errors.push('Meta CSP must use font-src self (self-hosted fonts)');
+    }
 }
+
+if (!index.includes('assets/fonts.css')) errors.push('index.html must link assets/fonts.css');
+if (index.includes('fonts.googleapis.com')) errors.push('index.html must not reference Google Fonts CDN');
 
 if (index.match(/style="margin-top/)) errors.push('index.html has forbidden inline style attributes');
 if (app.includes('window.PhareRegistry')) errors.push('app.js exposes window.PhareRegistry');

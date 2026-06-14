@@ -31,19 +31,24 @@ if (!body.includes('<main class="frame">')) {
     process.exit(1);
 }
 
+const cacheBust = (modular.match(/\?v=([a-z0-9]+)/i) || [])[1] || '';
 const head = modular.includes('<!DOCTYPE html>')
-    ? modular.split('</head>')[0].replace(/<link rel="stylesheet" href="assets\/styles\.css[^"]*">/, '').trim()
+    ? modular.split('</head>')[0]
+        .replace(/<link rel="stylesheet" href="assets\/styles\.css[^"]*">\s*/i, '')
+        .trim()
     : fs.readFileSync(monolithPath, 'utf8').split(/\r?\n/).slice(0, 17).join('\n');
 
+const stylesHref = cacheBust ? `assets/styles.css?v=${cacheBust}` : 'assets/styles.css';
+
 const html = `${head}
-    <link rel="stylesheet" href="assets/styles.css">
+    <link rel="stylesheet" href="${stylesHref}">
 </head>
 <body>
 
 ${body}
 
-    <script src="assets/config.js?v=20260611i"></script>
-    <script src="assets/app.js?v=20260611i" defer></script>
+    <script src="assets/config.js?v=20260612a"></script>
+    <script src="assets/app.js?v=20260612a" defer></script>
 </body>
 </html>
 `;

@@ -42,7 +42,7 @@
 
 
     /* === 10/10 internal version (exposed for operators / debugging, no UI impact) === */
-    const PHARE_VERSION = '2026.06-production.12';
+    const PHARE_VERSION = '2026.06-production.13';
 
     /*
      * PRODUCTION HARDENING (GitHub Pages host + Cloudflare Worker API):
@@ -571,9 +571,14 @@
 
     function setSuccessActionsEnabled(enabled, options = {}) {
         const { hideTransmit = false } = options;
+        const panel = el('panel-success');
         const copyBtn = el('btn-copy-payload');
         const openBtn = el('btn-open-channel');
         const decryptBtn = el('btn-demo-decrypt');
+
+        if (panel) {
+            panel.classList.toggle('is-complete', Boolean(hideTransmit));
+        }
 
         if (copyBtn) copyBtn.disabled = !enabled;
         if (decryptBtn) decryptBtn.disabled = !enabled;
