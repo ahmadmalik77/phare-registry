@@ -42,7 +42,7 @@
 
 
     /* === 10/10 internal version (exposed for operators / debugging, no UI impact) === */
-    const PHARE_VERSION = '2026.06-production.14';
+    const PHARE_VERSION = '2026.06-production.15';
 
     /*
      * PRODUCTION HARDENING (GitHub Pages host + Cloudflare Worker API):
@@ -159,6 +159,7 @@
         coreReady: false,
         active: false,
         visible: false,
+        resizing: false,
         dotX: 0,
         dotY: 0,
         ringX: 0,
@@ -891,14 +892,15 @@
             return;
         }
         syncCustomCursorElements();
-        setCustomCursorVisible(cursorState.visible);
+        setCustomCursorVisible(true);
     }
 
     function updateCustomCursorMode() {
-        if (!cursorState.coreReady) {
-            if (shouldUseCustomCursor()) initCustomCursorCore();
+        if (!hasFinePointer() || prefersReducedMotion) {
+            if (cursorState.coreReady) setCustomCursorActive(false);
             return;
         }
+        if (!cursorState.coreReady) initCustomCursorCore();
         setCustomCursorActive(shouldUseCustomCursor());
     }
 
@@ -920,27 +922,31 @@
     }
 
     function onCustomCursorLeave() {
+        if (cursorState.resizing) return;
         if (cursorState.active) setCustomCursorVisible(false);
     }
 
     function onCustomCursorEnter() {
-        if (cursorState.active && (cursorState.dotX > 0 || cursorState.dotY > 0)) {
-            setCustomCursorVisible(true);
-        }
+        if (cursorState.active) setCustomCursorVisible(true);
     }
 
     function onCustomCursorResize() {
+        cursorState.resizing = true;
         clearTimeout(cursorState.resizeTimer);
         clampCursorPosition();
         updateCustomCursorMode();
         if (cursorState.active) {
             syncCustomCursorElements();
-            if (cursorState.visible) setCustomCursorVisible(true);
+            setCustomCursorVisible(true);
         }
         cursorState.resizeTimer = setTimeout(() => {
+            cursorState.resizing = false;
             updateCustomCursorMode();
-            if (cursorState.active) syncCustomCursorElements();
-        }, 120);
+            if (cursorState.active) {
+                syncCustomCursorElements();
+                setCustomCursorVisible(true);
+            }
+        }, 150);
     }
 
     function trackCustomCursorRing() {
@@ -971,7 +977,6 @@
         finePointerQuery.addEventListener('change', updateCustomCursorMode);
 
         requestAnimationFrame(trackCustomCursorRing);
-        setCustomCursorActive(shouldUseCustomCursor());
 
         if (!prefersReducedMotion) {
             const leftCol = el('col-left');
