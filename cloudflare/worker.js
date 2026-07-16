@@ -11,8 +11,8 @@
  * Deploy: cd cloudflare && wrangler deploy
  */
 
-// Raised from 5 → 30: legitimate retries + mobile networks share NATs; 5/hour was too easy to exhaust.
-const RATE_LIMIT_MAX = 30;
+// Private UHNWI intake — allow room for retries/tests. Only successful stores count (see below).
+const RATE_LIMIT_MAX = 100;
 const RATE_LIMIT_WINDOW_SEC = 3600;
 const INTAKE_TTL_SEC = 14400;
 const MAX_BODY_BYTES = 98304; // 96 KiB
@@ -74,7 +74,8 @@ async function handleIntake(request, env, cors) {
     const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
     const ipHash = await hashIp(ip, env);
 
-    if (await isRateLimited(ipHash, env)) {
+    // Peek only — do not burn quota on failed validation / client retries
+    if (await isOverRateLimit(ipHash, env)) {
         return jsonResponse({ error: 'Rate limit exceeded' }, 429, securityHeaders(cors));
     }
 
@@ -119,24 +120,46 @@ async function handleIntake(request, env, cors) {
         expirationTtl: INTAKE_TTL_SEC
     });
 
+    // Count only successful stores so failed attempts do not lock operators out
+    await recordSuccessfulIntake(ipHash, env);
+
     return jsonResponse({ ok: true, id, receivedAt: record.receivedAt }, 202, securityHeaders(cors));
 }
 
-async function isRateLimited(ipHash, env) {
+/** Read-only: true if this IP already used its successful-submit budget. */
+async function isOverRateLimit(ipHash, env) {
     if (!env.PHARE_KV) return false;
     const key = `rate:${ipHash}`;
     const now = Date.now();
     const raw = await env.PHARE_KV.get(key);
-    let data = raw ? JSON.parse(raw) : { count: 0, windowStart: now };
+    if (!raw) return false;
+    let data;
+    try {
+        data = JSON.parse(raw);
+    } catch (_) {
+        return false;
+    }
+    if (now - (data.windowStart || 0) > RATE_LIMIT_WINDOW_SEC * 1000) return false;
+    return (data.count || 0) >= RATE_LIMIT_MAX;
+}
 
-    if (now - data.windowStart > RATE_LIMIT_WINDOW_SEC * 1000) {
+/** Increment only after a successful KV write. */
+async function recordSuccessfulIntake(ipHash, env) {
+    if (!env.PHARE_KV) return;
+    const key = `rate:${ipHash}`;
+    const now = Date.now();
+    const raw = await env.PHARE_KV.get(key);
+    let data = { count: 0, windowStart: now };
+    if (raw) {
+        try {
+            data = JSON.parse(raw);
+        } catch (_) { /* reset */ }
+    }
+    if (now - (data.windowStart || 0) > RATE_LIMIT_WINDOW_SEC * 1000) {
         data = { count: 0, windowStart: now };
     }
-    if (data.count >= RATE_LIMIT_MAX) return true;
-
-    data.count += 1;
+    data.count = (data.count || 0) + 1;
     await env.PHARE_KV.put(key, JSON.stringify(data), { expirationTtl: RATE_LIMIT_WINDOW_SEC });
-    return false;
 }
 
 async function hashIp(ip, env) {
