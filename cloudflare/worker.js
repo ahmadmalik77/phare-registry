@@ -11,7 +11,8 @@
  * Deploy: cd cloudflare && wrangler deploy
  */
 
-const RATE_LIMIT_MAX = 5;
+// Raised from 5 → 30: legitimate retries + mobile networks share NATs; 5/hour was too easy to exhaust.
+const RATE_LIMIT_MAX = 30;
 const RATE_LIMIT_WINDOW_SEC = 3600;
 const INTAKE_TTL_SEC = 14400;
 const MAX_BODY_BYTES = 98304; // 96 KiB

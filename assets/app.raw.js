@@ -2,7 +2,7 @@
     'use strict';
 
 
-    const PHARE_VERSION = '2026.06-production.18';
+    const PHARE_VERSION = '2026.06-production.19';
 
     /*
      * PRODUCTION HARDENING (GitHub Pages host + Cloudflare Worker API):
@@ -1203,22 +1203,30 @@
                 console.error('[Phare transmit]', err);
                 lastEncryptedPayload = null;
                 const attempts = noteTransmitAttempt();
+                const detail = String(err?.message || err || '');
                 let baseMsg = 'Transmission failed. Data was not sent. Please retry or contact the registry directly.';
                 if (isNetworkFetchFailure(err)) {
                     baseMsg = networkFailureMessage();
-                } else if (err.message?.includes('429')) {
-                    baseMsg = 'Registry channel is momentarily constrained. Please wait and retry.';
-                } else if (err.message?.includes('403')) {
+                } else if (detail.includes('429') || detail.toLowerCase().includes('rate limit')) {
+                    baseMsg = 'Registry channel is momentarily constrained (rate limit). Please wait about an hour and retry, or try another network.';
+                } else if (detail.includes('403') || detail.includes('Invitation required')) {
                     baseMsg = 'Registry channel declined this submission. Please contact the registry directly.';
-                } else if (err.message?.includes('fingerprint mismatch')) {
+                } else if (detail.includes('fingerprint mismatch')) {
                     baseMsg = 'Registry security check failed. Do not transmit on this connection — contact the registry directly.';
-                } else if (err.message?.includes('Origin not allowed') || err.message?.includes('503')) {
+                } else if (detail.includes('Origin not allowed') || detail.includes('503')) {
                     baseMsg = 'Registry channel is temporarily unavailable. Please retry shortly.';
-                } else if (err.message?.includes('registry key endpoint')) {
+                } else if (detail.includes('registry key endpoint')) {
                     baseMsg = 'Could not verify the registry encryption key. Please retry or contact the registry directly.';
+                } else if (detail.includes('timed out') || detail.includes('Timeout') || err?.name === 'AbortError') {
+                    baseMsg = 'Request timed out. Check your connection and retry.';
+                } else if (detail.startsWith('Server responded')) {
+                    // Surface real API status (was previously hidden behind the generic line)
+                    baseMsg = `Transmission failed (${detail}). Data was not sent. Please retry or contact the registry.`;
+                } else if (detail) {
+                    baseMsg = `Transmission failed: ${detail}`;
                 }
                 if (attempts >= 3) {
-                    baseMsg += ' (Multiple recent attempts detected — waiting 30–60s may help.)';
+                    baseMsg += ' (Multiple recent attempts — waiting 30–60s may help; rate limit is per hour.)';
                 }
                 setTransmitError(baseMsg);
                 btn.classList.remove('transmitting');
