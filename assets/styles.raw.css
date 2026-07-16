@@ -635,6 +635,12 @@
 
         #panel-success { position: relative; overflow: visible; }
 
+        /* Programmatic focus after transmit (a11y) — never show system blue/white focus box */
+        #panel-success:focus,
+        #panel-success:focus-visible {
+            outline: none;
+        }
+
         .success-beacon {
             position: absolute;
             top: -0.5rem;
