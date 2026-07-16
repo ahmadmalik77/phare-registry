@@ -31,16 +31,20 @@ if (!body.includes('<main class="frame">')) {
     process.exit(1);
 }
 
-const cacheBust = (modular.match(/\?v=([a-z0-9]+)/i) || [])[1] || '20260717a';
+// Prefer versioned asset filenames (cache-proof), fall back to ?v= query bust
+const stylesMatch = modular.match(/href="(assets\/styles[^"]+)"/i);
+const configMatch = modular.match(/src="(assets\/config\.js[^"]*)"/i);
+const appMatch = modular.match(/src="(assets\/app[^"]+)"/i);
+
+const stylesHref = stylesMatch?.[1] || 'assets/styles-20.css';
+const configHref = configMatch?.[1] || 'assets/config.js?v=20';
+const appHref = appMatch?.[1] || 'assets/app-20.js';
+
 const head = modular.includes('<!DOCTYPE html>')
     ? modular.split('</head>')[0]
-        .replace(/<link rel="stylesheet" href="assets\/styles\.css[^"]*">\s*/i, '')
+        .replace(/<link rel="stylesheet" href="assets\/styles[^"]*">\s*/i, '')
         .trim()
     : fs.readFileSync(monolithPath, 'utf8').split(/\r?\n/).slice(0, 17).join('\n');
-
-const stylesHref = `assets/styles.css?v=${cacheBust}`;
-const configHref = `assets/config.js?v=${cacheBust}`;
-const appHref = `assets/app.js?v=${cacheBust}`;
 
 const html = `${head}
     <link rel="stylesheet" href="${stylesHref}">
@@ -56,4 +60,4 @@ ${body}
 `;
 
 fs.writeFileSync(path.join(root, 'index.production.html'), html, 'utf8');
-console.log('built index.production.html', html.length, 'cache:', cacheBust);
+console.log('built index.production.html', html.length, 'app:', appHref, 'styles:', stylesHref);

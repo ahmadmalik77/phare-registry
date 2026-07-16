@@ -32,7 +32,9 @@ const caches = [...index.matchAll(/\?v=([a-z0-9]+)/gi)].map(m => m[1]);
 if (new Set(caches).size > 1) {
     errors.push(`index.html cache-bust mismatch: ${[...new Set(caches)].join(', ')}`);
 }
-if (!cacheMatch) warnings.push('index.html has no ?v= cache bust');
+// Versioned filenames (app-20.js) are preferred over ?v= alone
+const hasVersionedAssets = /assets\/app-\d+\.js/.test(index) || /assets\/styles-\d+\.css/.test(index);
+if (!cacheMatch && !hasVersionedAssets) warnings.push('index.html has no ?v= cache bust or versioned asset filenames');
 
 const metaCsp = index.match(/http-equiv="Content-Security-Policy"\s+content="([^"]+)"/);
 if (!metaCsp) {

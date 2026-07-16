@@ -30,7 +30,7 @@
         } catch (_) {}
     })();
 
-    const PHARE_VERSION = '2026.06-production.20';
+    const PHARE_VERSION = '2026.06-production.21';
 
     /*
      * PRODUCTION HARDENING (GitHub Pages host + Cloudflare Worker API):

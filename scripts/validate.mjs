@@ -26,12 +26,19 @@ const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 if (index.includes('<style>') && index.includes('const CONFIG')) {
     errors.push('index.html still contains inline monolith — run npm run build');
 }
-if (!index.includes('assets/styles.css')) errors.push('index.html must link assets/styles.css');
-const styles = fs.readFileSync(path.join(root, 'assets', 'styles.css'), 'utf8');
-if (!styles.includes('@font-face')) errors.push('assets/styles.css must include self-hosted @font-face fonts');
+const stylesHref = index.match(/href="(assets\/styles[^"]+)"/)?.[1];
+if (!stylesHref) errors.push('index.html must link a styles stylesheet');
+const stylesFile = stylesHref?.split('?')[0] || 'assets/styles.css';
+if (!fs.existsSync(path.join(root, stylesFile))) errors.push(`Missing stylesheet file: ${stylesFile}`);
+const styles = fs.readFileSync(path.join(root, stylesFile.startsWith('assets/') ? stylesFile : 'assets/styles.css'), 'utf8');
+if (!styles.includes('@font-face')) errors.push('styles must include self-hosted @font-face fonts');
 if (index.includes('fonts.googleapis.com')) errors.push('index.html must not load Google Fonts CDN');
 if (index.includes('assets/fonts.css')) errors.push('index.html must not link separate fonts.css — fonts are in styles.css');
 if (!index.includes('assets/config.js')) errors.push('index.html must load assets/config.js');
+const appHref = index.match(/src="(assets\/app[^"]+)"/)?.[1];
+if (!appHref) errors.push('index.html must load app script');
+const appFile = (appHref || 'assets/app.js').split('?')[0];
+if (!fs.existsSync(path.join(root, appFile))) errors.push(`Missing app script file: ${appFile}`);
 if (!index.includes('<main class="frame">')) errors.push('index.html missing intake wizard markup');
 if (!index.includes('id="a7_hp_trap"')) errors.push('index.html missing honeypot field a7_hp_trap');
 if (index.includes('invitation-only') || index.includes('By invitation only')) {

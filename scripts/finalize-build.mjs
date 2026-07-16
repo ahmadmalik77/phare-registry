@@ -29,7 +29,7 @@ if (!prod.includes('<main class="frame">')) {
     console.error('finalize-build: index.production.html missing intake markup — refusing to overwrite index.html');
     process.exit(1);
 }
-if (!prod.includes('assets/app.js') || !prod.includes('assets/styles.css')) {
+if (!/assets\/app[^"']*\.js/.test(prod) || !/assets\/styles[^"']*\.css/.test(prod)) {
     console.error('finalize-build: production HTML missing required asset links — refusing to overwrite');
     process.exit(1);
 }
