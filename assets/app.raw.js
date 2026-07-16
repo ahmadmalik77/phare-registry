@@ -30,7 +30,7 @@
         } catch (_) {}
     })();
 
-    const PHARE_VERSION = '2026.06-production.21';
+    const PHARE_VERSION = '2026.06-production.22';
 
     /*
      * PRODUCTION HARDENING (GitHub Pages host + Cloudflare Worker API):
@@ -908,8 +908,18 @@
         setCustomCursorVisible(true);
     }
 
+    function canUseCustomCursor() {
+        // Premium desktop pointer only — touch phones/iPads use native interaction
+        try {
+            return window.matchMedia('(pointer: fine)').matches
+                && window.matchMedia('(hover: hover)').matches;
+        } catch (_) {
+            return true;
+        }
+    }
+
     function updateCustomCursorMode() {
-        if (prefersReducedMotion) {
+        if (prefersReducedMotion || !canUseCustomCursor()) {
             if (cursorState.coreReady) setCustomCursorActive(false);
             return;
         }
@@ -1320,6 +1330,13 @@
         }
         updateCustomCursorMode();
     });
+    try {
+        const finePointer = window.matchMedia('(pointer: fine)');
+        const canHover = window.matchMedia('(hover: hover)');
+        const onPointerCapabilityChange = () => updateCustomCursorMode();
+        finePointer.addEventListener('change', onPointerCapabilityChange);
+        canHover.addEventListener('change', onPointerCapabilityChange);
+    } catch (_) { /* older Safari */ }
 
     // applyDemoMode() removed (production build)
     initCustomCursor();

@@ -73,10 +73,11 @@ const { code: minJs } = await transform(js, {
     legalComments: 'none'
 });
 fs.writeFileSync(canonical, minJs, 'utf8');
-// Cache-proof deploy filename (browsers cannot reuse broken app.js?v= cache)
-const deployApp = path.join(root, 'assets', 'app-20.js');
+// Cache-proof deploy filename from production revision (e.g. app-22.js)
+const assetRev = (VERSION.match(/production\.(\d+)/) || [])[1] || '22';
+const deployApp = path.join(root, 'assets', `app-${assetRev}.js`);
 fs.writeFileSync(deployApp, minJs, 'utf8');
-console.log('built assets/app.js + assets/app-20.js', minJs.length, 'bytes (minified), version:', VERSION);
+console.log(`built assets/app.js + assets/app-${assetRev}.js`, minJs.length, 'bytes (minified), version:', VERSION);
 
 // Minify CSS — prefer styles.raw.css when present and unminified
 if (fs.existsSync(stylesPath) || fs.existsSync(stylesRawPath)) {
@@ -103,7 +104,7 @@ if (fs.existsSync(stylesPath) || fs.existsSync(stylesRawPath)) {
         legalComments: 'none'
     });
     fs.writeFileSync(stylesPath, minCss, 'utf8');
-    const deployCss = path.join(root, 'assets', 'styles-20.css');
+    const deployCss = path.join(root, 'assets', `styles-${assetRev}.css`);
     fs.writeFileSync(deployCss, minCss, 'utf8');
-    console.log('built assets/styles.css + assets/styles-20.css', minCss.length, 'bytes (minified)');
+    console.log(`built assets/styles.css + assets/styles-${assetRev}.css`, minCss.length, 'bytes (minified)');
 }

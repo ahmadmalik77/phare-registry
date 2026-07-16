@@ -1045,60 +1045,265 @@
             .panel.off, .step:not(.on), .nav, .progress, .cta { display: none !important; }
         }
 
+        /* Touch / coarse pointer: never hide system cursor (iPhone / iPad finger) */
+        @media (hover: none), (pointer: coarse) {
+            body.has-custom-cursor,
+            body.has-custom-cursor button,
+            body.has-custom-cursor .opt,
+            body.has-custom-cursor .cta,
+            body.has-custom-cursor .nav-btn,
+            body.has-custom-cursor .secure-btn,
+            body.has-custom-cursor .text-input {
+                cursor: auto;
+            }
+            .cur-dot, .cur-ring { display: none !important; }
+        }
+
         @media (max-width: 1080px) {
-            html, body { overflow-y: auto; height: auto; letter-spacing: 0.05em; }
-            .frame { flex-direction: column; height: auto; min-height: 100svh; }
+            html, body {
+                overflow-y: auto;
+                height: auto;
+                letter-spacing: 0.05em;
+                -webkit-tap-highlight-color: rgba(200, 169, 106, 0.12);
+            }
+            .frame {
+                flex-direction: column;
+                height: auto;
+                min-height: 100svh;
+                min-height: 100dvh;
+            }
             .col-left {
-                width: 100%; height: auto;
-                padding: 4.5rem 2.5rem 3.5rem;
+                width: 100%;
+                height: auto;
+                padding: 4.75rem max(2.5rem, env(safe-area-inset-right)) 3.75rem max(2.5rem, env(safe-area-inset-left));
                 border-right: none;
                 border-bottom: 1px solid var(--edge);
+                background:
+                    linear-gradient(180deg, rgba(200, 169, 106, 0.04) 0%, transparent 42%),
+                    var(--void);
             }
             .col-left::after, .col-left::before, .beacon, .vert-tag { display: none !important; }
-            body::after { opacity: 0.018; }
-            .hero { margin: 2.5rem 0; max-width: 100%; }
-            .hero-title { font-size: 2.4rem; line-height: 1.3; margin-bottom: 1.5rem; }
-            .hero-sub { font-size: 1.05rem; line-height: 1.75; }
+            body::after { opacity: 0.02; }
+            .wordmark {
+                font-size: clamp(0.72rem, 2.2vw, 0.85rem);
+                letter-spacing: 0.42em;
+            }
+            .gold-rule {
+                width: 3.5rem;
+                margin: 1.35rem 0 1.1rem;
+            }
+            .hero { margin: 2.75rem 0 2rem; max-width: 36rem; }
+            .hero-title {
+                font-size: clamp(2.35rem, 6.5vw, 3rem);
+                line-height: 1.22;
+                margin-bottom: 1.35rem;
+                letter-spacing: 0.01em;
+            }
+            .hero-sub {
+                font-size: clamp(1.05rem, 2.8vw, 1.2rem);
+                line-height: 1.8;
+                color: var(--veil);
+                max-width: 28rem;
+            }
+            .floor {
+                margin-top: 2rem;
+                opacity: 0.75;
+                letter-spacing: 0.28em;
+            }
             .col-right {
-                width: 100%; height: auto;
-                min-height: 520px;
-                padding: 4rem 2.5rem 5rem;
-                align-items: center; justify-content: center;
+                width: 100%;
+                height: auto;
+                min-height: min(70svh, 640px);
+                padding: 3.75rem max(2.5rem, env(safe-area-inset-right)) max(4.5rem, env(safe-area-inset-bottom)) max(2.5rem, env(safe-area-inset-left));
+                align-items: center;
+                justify-content: flex-start;
             }
             .panel {
-                position: relative; top: auto; left: auto; right: auto;
-                max-width: 100%; width: 100%;
+                position: relative;
+                top: auto; left: auto; right: auto;
+                max-width: 28rem;
+                width: 100%;
             }
             .panel.off { display: none; }
-            .ghost-p { font-size: clamp(8rem, 30vw, 14rem); right: -0.5rem; bottom: -1rem; }
-            .nav { margin-top: 2rem; }
-            .step-q { font-size: 1.45rem; margin-bottom: 0.5rem; }
-            .step-hint { font-size: 1rem; margin-bottom: 1.65rem; max-width: none; }
-            .landing-hint { font-size: 1rem; margin-top: 1.1rem; }
-            .opt { font-size: 0.92rem; padding: 1.05rem 0; letter-spacing: 0.04em; }
-            .draft-indicator { top: 0.6rem; right: 2.5rem; }
-            .encryption-note { margin-top: 1rem; }
-            .utility-bar { right: 2.5rem; bottom: 1rem; }
+            .ghost-p {
+                font-size: clamp(7rem, 28vw, 12rem);
+                right: -0.25rem;
+                bottom: -0.75rem;
+                opacity: 0.035;
+            }
+            .landing-title {
+                font-size: clamp(1.85rem, 5vw, 2.25rem);
+            }
+            .landing-body {
+                font-size: 0.95rem;
+                line-height: 1.9;
+                color: var(--veil);
+                max-width: none;
+            }
+            .landing-hint {
+                font-size: 1.08rem;
+                margin-top: 1.25rem;
+                color: var(--paper);
+                opacity: 0.72;
+                max-width: none;
+            }
+            .cta {
+                margin-top: 2.85rem;
+                min-height: 2.75rem;
+                letter-spacing: 0.4em;
+                font-size: 0.68rem;
+            }
+            .progress-wrap { margin-bottom: 2.25rem; }
+            .step-label {
+                font-size: 0.62rem;
+                letter-spacing: 0.38em;
+                opacity: 0.85;
+            }
+            .seg { width: 34px; height: 1.5px; }
+            .nav { margin-top: 2.25rem; gap: 1rem; }
+            .nav-btn {
+                min-height: 2.75rem;
+                padding: 0.65rem 0.15rem;
+                letter-spacing: 0.32em;
+                font-size: 0.6rem;
+            }
+            .step-q {
+                font-size: clamp(1.4rem, 4.2vw, 1.65rem);
+                margin-bottom: 0.55rem;
+                line-height: 1.3;
+            }
+            .step-hint {
+                font-size: 1.05rem;
+                line-height: 1.65;
+                margin-bottom: 1.75rem;
+                max-width: none;
+                color: var(--paper);
+                opacity: 0.7;
+            }
+            .opt {
+                font-size: 0.98rem;
+                padding: 1.15rem 0.15rem;
+                letter-spacing: 0.035em;
+                min-height: 3.15rem;
+                -webkit-tap-highlight-color: rgba(200, 169, 106, 0.1);
+            }
+            .opt.chosen { letter-spacing: 0.04em; }
+            .text-input {
+                font-size: 1.06rem;
+                padding: 0.85rem 0;
+                min-height: 3rem;
+            }
+            .input-hint {
+                font-size: 0.68rem;
+                opacity: 0.8;
+                color: var(--veil);
+            }
+            .input-error.show {
+                font-size: 0.72rem;
+            }
+            .draft-indicator { top: 0.75rem; right: max(2.5rem, env(safe-area-inset-right)); }
+            .encryption-note, .production-note {
+                margin-top: 1.15rem;
+                font-size: 0.72rem;
+                line-height: 1.65;
+                opacity: 0.75;
+            }
+            .utility-bar {
+                right: max(2.5rem, env(safe-area-inset-right));
+                bottom: max(1.15rem, env(safe-area-inset-bottom));
+            }
+            .success-body {
+                font-size: 1.02rem;
+                line-height: 1.9;
+            }
+            .success-closing {
+                font-size: 1.05rem;
+                margin-top: 1.65rem;
+            }
+            .secure-btn {
+                min-height: 2.75rem;
+                letter-spacing: 0.22em;
+            }
+            .restore-card {
+                padding: 1.85rem 1.65rem;
+                margin: 1.25rem;
+                max-width: 26rem;
+            }
         }
 
         @media (max-width: 480px) {
-            .col-left { padding: 3.25rem 1.5rem 2.75rem; }
-            .col-right { padding: 3rem 1.5rem 4.5rem; min-height: 480px; }
-            .hero-title { font-size: 2rem; }
-            .hero-sub { font-size: 0.98rem; }
-            .landing-title { font-size: 1.65rem; }
-            .landing-body, .landing-hint { max-width: 100%; }
-            .cta { margin-top: 2.5rem; letter-spacing: 0.38em; }
-            .progress-wrap { margin-bottom: 2rem; }
-            .seg { width: 28px; }
-            .step-q { font-size: 1.28rem; }
-            .step-hint { font-size: 0.95rem; line-height: 1.55; }
-            .opt { gap: 10px; padding: 0.95rem 0; }
-            .nav-btn { letter-spacing: 0.28em; font-size: 0.58rem; }
-            .text-input { font-size: 1.02rem; }
-            .draft-indicator { right: 1.5rem; font-size: 0.48rem; }
-            .utility-bar { right: 1.5rem; }
-            .success-body { font-size: 0.92rem; line-height: 1.85; }
-            .success-closing { font-size: 0.98rem; margin-top: 1.5rem; }
-            .restore-card { padding: 1.5rem; margin: 1rem; }
+            .col-left {
+                padding: 3.75rem max(1.35rem, env(safe-area-inset-right)) 2.85rem max(1.35rem, env(safe-area-inset-left));
+            }
+            .col-right {
+                padding: 3.15rem max(1.35rem, env(safe-area-inset-right)) max(4.25rem, env(safe-area-inset-bottom)) max(1.35rem, env(safe-area-inset-left));
+                min-height: min(72svh, 560px);
+            }
+            .hero { margin: 2.25rem 0 1.65rem; }
+            .hero-title {
+                font-size: clamp(1.95rem, 8.2vw, 2.35rem);
+                line-height: 1.25;
+            }
+            .hero-sub {
+                font-size: 1.02rem;
+                line-height: 1.75;
+            }
+            .landing-title { font-size: 1.75rem; }
+            .landing-body { font-size: 0.92rem; }
+            .landing-hint { font-size: 1.02rem; }
+            .cta {
+                margin-top: 2.5rem;
+                letter-spacing: 0.34em;
+                font-size: 0.64rem;
+            }
+            .progress-wrap { margin-bottom: 1.85rem; }
+            .seg { width: 26px; }
+            .step-q { font-size: 1.32rem; }
+            .step-hint {
+                font-size: 0.98rem;
+                line-height: 1.6;
+                margin-bottom: 1.5rem;
+            }
+            .opt {
+                gap: 12px;
+                padding: 1.05rem 0;
+                font-size: 0.95rem;
+            }
+            .nav-btn {
+                letter-spacing: 0.26em;
+                font-size: 0.58rem;
+            }
+            .text-input { font-size: 16px; /* iOS: avoid input zoom */ }
+            .draft-indicator {
+                right: max(1.35rem, env(safe-area-inset-right));
+                font-size: 0.5rem;
+            }
+            .utility-bar {
+                right: max(1.35rem, env(safe-area-inset-right));
+                bottom: max(1rem, env(safe-area-inset-bottom));
+            }
+            .success-body { font-size: 0.98rem; line-height: 1.9; }
+            .success-closing { font-size: 1.02rem; margin-top: 1.5rem; }
+            .restore-card {
+                padding: 1.5rem 1.25rem;
+                margin: 1rem;
+            }
+            .panel { max-width: 100%; }
+        }
+
+        /* iPad-class widths: a bit more air, still stacked */
+        @media (min-width: 600px) and (max-width: 1080px) {
+            .col-left {
+                padding-top: 5.25rem;
+                padding-bottom: 4rem;
+            }
+            .col-right {
+                padding-top: 4.25rem;
+                padding-bottom: 5rem;
+            }
+            .hero-title { font-size: clamp(2.6rem, 5.5vw, 3.15rem); }
+            .panel { max-width: 32rem; }
+            .opt { font-size: 1.02rem; padding: 1.2rem 0.2rem; }
+            .step-q { font-size: 1.55rem; }
+            .step-hint { font-size: 1.1rem; }
         }
