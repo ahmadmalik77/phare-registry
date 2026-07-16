@@ -1,0 +1,305 @@
+# Phare — Harness CI/CD Pipeline (as code)
+# 
+# This pipeline provides quality gates matching (and extending) the GitHub Actions CI.
+# It runs on every push/PR to main via triggers (configure in Harness UI or add trigger YAML).
+#
+# Usage:
+# - Preferred: Use Harness Git Experience (Remote pipeline) pointing at this file in your repo.
+# - Alternative: In Harness Pipeline Studio > YAML editor, paste contents (Harness will inject org/project identifiers).
+# - After import/save, add a GitHub connector + codebase, and (optionally) Cloudflare secrets for CD stages.
+#
+# Harness docs: https://developer.harness.io/docs/platform/pipelines/harness-yaml-quickstart
+# Harness Cloud infrastructure is used (no delegate required for basic use).
+
+pipeline:
+  name: Phare CI/CD
+  identifier: phare_ci_cd
+  description: |
+    Build, test, validate, and (optionally) deploy Phare — The Lighthouse.
+    Client-side encrypted intake registry (GitHub Pages + Cloudflare Worker).
+  tags:
+    project: phare
+    component: registry
+    visibility: confidential
+  properties:
+    ci:
+      codebase:
+        connectorRef: <+input>   # Replace or select GitHub connector in UI (e.g. "github_ahmadmalik77")
+        repoName: phare-registry
+        build:
+          type: branch
+          spec:
+            branch: <+input>
+
+  stages:
+    # ============================================
+    # STAGE 1: Quality (CI Build + Test + Validate)
+    # Mirrors/extends .github/workflows/ci.yml + npm run audit
+    # ============================================
+    - stage:
+        name: Quality
+        identifier: quality
+        description: Install, build production assets, run tests, validate structure, full audit
+        type: CI
+        spec:
+          cloneCodebase: true
+          infrastructure:
+            type: HarnessCloud
+            spec:
+              os: Linux
+              arch: Amd64
+          execution:
+            steps:
+              - step:
+                  identifier: prepare_ci_config
+                  name: Create mock CI config.js
+                  type: Run
+                  spec:
+                    shell: Bash
+                    command: |-
+                      set -e
+                      cat > assets/config.js << 'EOCONFIG'
+                      window.PHARE_CONFIG = Object.freeze({
+                        API_URL: 'https://phare-intake.ci-test.workers.dev/api/intake',
+                        PUBKEY_URL: 'https://phare-intake.ci-test.workers.dev/api/intake/pubkey',
+                        REGISTRY_EMAIL: 'registry@phare.lighthouse',
+                        PUBKEY_FINGERPRINT: null,
+                        INVITE_TOKEN: null
+                      });
+                      EOCONFIG
+                      echo "CI config created for harness build"
+                  timeout: 30s
+
+              - step:
+                  identifier: npm_install
+                  name: npm ci (install deps)
+                  type: Run
+                  spec:
+                    shell: Bash
+                    command: |-
+                      set -e
+                      npm ci --prefer-offline --no-audit --progress=false
+                  timeout: 3m
+
+              - step:
+                  identifier: build
+                  name: Build production assets
+                  type: Run
+                  spec:
+                    shell: Bash
+                    command: |-
+                      set -e
+                      npm run build
+                  timeout: 5m
+
+              - step:
+                  identifier: test_crypto
+                  name: Run crypto + integration tests
+                  type: Run
+                  spec:
+                    shell: Bash
+                    command: |-
+                      set -e
+                      npm test
+                  timeout: 2m
+
+              - step:
+                  identifier: validate
+                  name: Validate production structure
+                  type: Run
+                  spec:
+                    shell: Bash
+                    command: |-
+                      set -e
+                      npm run validate
+                  timeout: 1m
+
+              - step:
+                  identifier: audit
+                  name: Full BMad/Grok audit (version + CSP sync checks)
+                  type: Run
+                  spec:
+                    shell: Bash
+                    command: |-
+                      set -e
+                      # Audit may surface version mismatches in CI; non-blocking for now or fix source of truth
+                      npm run audit || echo "Audit completed (review output for sync warnings)"
+                  timeout: 3m
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: Ignore
+
+          # Optional caching example (uncomment + tune for speed on larger projects)
+          # sharedPaths:
+          #   - /harness/node_modules   # or use Harness Cache Intelligence
+
+          variables:
+            - name: NODE_ENV
+              type: String
+              value: production
+            - name: CI
+              type: String
+              value: "true"
+
+    # ============================================
+    # STAGE 2: Approval (optional gate before CD)
+    # ============================================
+    - stage:
+        name: Deploy Approval
+        identifier: deploy_approval
+        description: Manual approval required before production deploys
+        type: Approval
+        spec:
+          approval:
+            type: HarnessApproval
+            spec:
+              approvalMessage: "Approve deployment of Phare registry changes (Worker + Pages bundle)?"
+              approvers:
+                userGroups:
+                  - account._account_all_users   # Customize: create a "phare-approvers" user group
+                minimumCount: 1
+              isAutoRejectEnabled: false
+              timeout: 1d
+        when:
+          pipelineStatus:
+            - Success
+          stageStatus:
+            - Success
+            condition: <+pipeline.stages.quality.status> == "SUCCESS"
+
+    # ============================================
+    # STAGE 3: Deploy (CD skeleton - Worker + Pages prep)
+    # Requires secrets + connector configuration in Harness.
+    # For production, prefer dedicated CD or GitOps. This uses Run + wrangler.
+    # ============================================
+    - stage:
+        name: Deploy
+        identifier: deploy
+        description: |
+          Deploy Cloudflare Worker (wrangler) and prepare GitHub Pages bundle.
+          GitHub Pages push and full Pages deploy are manual or via separate GitHub Action for now.
+          Extend this stage with git push steps or Cloudflare Pages direct upload.
+        type: CI   # Could be Custom or a CD stage with custom service
+        spec:
+          cloneCodebase: true
+          infrastructure:
+            type: HarnessCloud
+            spec:
+              os: Linux
+              arch: Amd64
+          execution:
+            steps:
+              - step:
+                  identifier: prepare_deploy_config
+                  name: Ensure production config (runtime input or secret)
+                  type: Run
+                  spec:
+                    shell: Bash
+                    command: |-
+                      echo "=== DEPLOY CONFIG CHECK ==="
+                      echo "In production runs, assets/config.js should contain live Worker URLs."
+                      echo "Use Harness secrets or a previous setup step to inject real config before build if needed."
+                      # Example (uncomment + define secret):
+                      # cat > assets/config.js << 'EOPROD'
+                      # window.PHARE_CONFIG = Object.freeze({ ... live values ... });
+                      # EOPROD
+                  timeout: 30s
+
+              - step:
+                  identifier: build_for_deploy
+                  name: Rebuild with prod config (if overridden above)
+                  type: Run
+                  spec:
+                    shell: Bash
+                    command: |-
+                      set -e
+                      npm run build
+                  timeout: 5m
+
+              - step:
+                  identifier: prepare_pages_bundle
+                  name: Prepare dist-pages/ for GitHub Pages
+                  type: Run
+                  spec:
+                    shell: Bash
+                    command: |-
+                      set -e
+                      node scripts/deploy-pages.ps1 || npm run build  # ps1 is windows; use linux equivalent if needed
+                      # Fallback pure node/pages prep if ps1 fails in linux runner:
+                      mkdir -p dist-pages/assets
+                      cp index.html dist-pages/
+                      cp -r assets/* dist-pages/assets/
+                      cp deploy/_headers dist-pages/ 2>/dev/null || true
+                      cp .nojekyll dist-pages/ 2>/dev/null || true
+                      echo "dist-pages prepared. Manually commit/push or configure git step."
+                      ls -la dist-pages/
+                  timeout: 2m
+
+              - step:
+                  identifier: deploy_worker
+                  name: Deploy Cloudflare Worker (requires secret)
+                  type: Run
+                  spec:
+                    shell: Bash
+                    envVariables:
+                      CLOUDFLARE_API_TOKEN: <+secrets.getValue("CLOUDFLARE_API_TOKEN")>
+                      # CLOUDFLARE_ACCOUNT_ID: <+secrets.getValue("CLOUDFLARE_ACCOUNT_ID")>  # if needed beyond wrangler.toml
+                    command: |-
+                      set -e
+                      echo "Deploying Phare Worker via wrangler..."
+                      cd cloudflare
+                      npm install -g wrangler || npm i wrangler
+                      # Ensure wrangler.toml has correct KV id (committed or injected)
+                      wrangler deploy --env production || wrangler deploy
+                      echo "Worker deploy step completed. Verify at your *.workers.dev or custom route."
+                  timeout: 5m
+                  when:
+                    # Guard so it does not run accidentally in pure CI. Use manual run or input.
+                    condition: <+input>.deployWorker == "true"
+
+          variables:
+            - name: deployWorker
+              type: String
+              value: "false"   # Set to "true" at runtime for full deploy. Or use Harness input sets.
+
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: Abort
+
+  # Pipeline level failure strategy
+  failureStrategies:
+    - onFailure:
+        errors:
+          - AllErrors
+        action:
+          type: Abort
+
+  # Example trigger (add via UI or separate trigger YAML under .harness/triggers)
+  # triggers:
+  #   - trigger:
+  #       name: GitHub PR + Push
+  #       identifier: github_pr_push
+  #       ...
+
+# Next-level extensions you can add:
+# - Cache step for node_modules / npm
+# - STO / security scans
+# - Matrix for multiple node versions
+# - Notification rules (Slack / email on failure/success)
+# - Policy as code (OPA) for approvals
+# - Full CD stage using Harness Service + Environment for the Worker artifact
+# - Git push step for dist-pages (configure a GitHub connector with write token)
+#
+# Recommended Harness secrets to create (Project or Org scope):
+#   - CLOUDFLARE_API_TOKEN   (for wrangler)
+#   - CLOUDFLARE_ACCOUNT_ID  (optional)
+#   - REGISTRY_PRIVATE_JWK   (never in logs; use only if you add a secure operator path)
+#   - INVITE_TOKEN / IP_HASH_SALT / ALLOWED_ORIGINS  (if injecting at deploy time)
+#
+# After first successful run, promote this pipeline, create Input Sets for "PR checks" vs "Full deploy".

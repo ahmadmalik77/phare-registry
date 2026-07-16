@@ -1,6 +1,6 @@
 {
   "name": "phare-registry",
-  "version": "2026.06-production.17",
+  "version": "2026.06-production.18",
   "private": true,
   "type": "module",
   "description": "Phare — The Lighthouse. Private UHNWI executive intake registry.",
@@ -15,6 +15,9 @@
     "setup": "node scripts/setup-config.mjs",
     "fingerprint": "node scripts/fingerprint.mjs",
     "ci": "npm test && npm run validate"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12"
   },
   "engines": {
     "node": ">=18"

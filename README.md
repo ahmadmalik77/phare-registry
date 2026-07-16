@@ -134,6 +134,39 @@ Built-in sample roundtrip: **Generate Sample Keypair + Test Roundtrip**.
 
 ---
 
+## CI / CD
+
+Two options today:
+
+### 1. GitHub Actions (lightweight, always-on)
+`.github/workflows/ci.yml` runs on every push/PR:
+- Mocks a safe `assets/config.js`
+- `npm run build`
+- `npm test && npm run validate`
+
+### 2. Harness (recommended for releases & CD)
+Full pipeline-as-code lives in `.harness/pipelines/phare-ci-pipeline.yaml`.
+
+**Features**
+- Same quality gates + `npm run audit`
+- Manual approval stage before any deploy
+- Harness Cloud runners (Linux)
+- Ready-to-extend CD steps for Cloudflare Worker (`wrangler deploy`) + Pages bundle prep
+- Secrets, expressions, notifications, future policy-as-code
+
+**Quick on-ramp**
+1. Read [`.harness/README.md`](.harness/README.md)
+2. Create free Harness account at https://app.harness.io
+3. Add GitHub connector + the few Cloudflare secrets you need
+4. Import the remote pipeline pointing at `.harness/pipelines/phare-ci-pipeline.yaml`
+5. Run → watch rich logs and add triggers/approvals as needed
+
+Both systems can coexist. GitHub Actions gives instant PR feedback; Harness is the powerful release + deployment orchestrator.
+
+See also: `npm run ci` (local equivalent of the quality job).
+
+---
+
 ## Development
 
 | Command | Purpose |

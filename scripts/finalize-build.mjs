@@ -29,11 +29,11 @@ if (!prod.includes('<main class="frame">')) {
     console.error('finalize-build: index.production.html missing intake markup — refusing to overwrite index.html');
     process.exit(1);
 }
-
-const current = fs.existsSync(dest) ? fs.readFileSync(dest, 'utf8') : '';
-if (current.includes('<main class="frame">')) {
-    console.log('finalize-build: keeping existing modular index.html (safe)');
-} else {
-    fs.copyFileSync(src, dest);
-    console.log('index.html updated from index.production.html');
+if (!prod.includes('assets/app.js') || !prod.includes('assets/styles.css')) {
+    console.error('finalize-build: production HTML missing required asset links — refusing to overwrite');
+    process.exit(1);
 }
+
+// H-2: always deploy production HTML so build optimizations reach GitHub Pages
+fs.copyFileSync(src, dest);
+console.log('index.html updated from index.production.html');

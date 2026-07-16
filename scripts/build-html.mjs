@@ -31,14 +31,16 @@ if (!body.includes('<main class="frame">')) {
     process.exit(1);
 }
 
-const cacheBust = (modular.match(/\?v=([a-z0-9]+)/i) || [])[1] || '';
+const cacheBust = (modular.match(/\?v=([a-z0-9]+)/i) || [])[1] || '20260717a';
 const head = modular.includes('<!DOCTYPE html>')
     ? modular.split('</head>')[0]
         .replace(/<link rel="stylesheet" href="assets\/styles\.css[^"]*">\s*/i, '')
         .trim()
     : fs.readFileSync(monolithPath, 'utf8').split(/\r?\n/).slice(0, 17).join('\n');
 
-const stylesHref = cacheBust ? `assets/styles.css?v=${cacheBust}` : 'assets/styles.css';
+const stylesHref = `assets/styles.css?v=${cacheBust}`;
+const configHref = `assets/config.js?v=${cacheBust}`;
+const appHref = `assets/app.js?v=${cacheBust}`;
 
 const html = `${head}
     <link rel="stylesheet" href="${stylesHref}">
@@ -47,11 +49,11 @@ const html = `${head}
 
 ${body}
 
-    <script src="assets/config.js?v=20260615a"></script>
-    <script src="assets/app.js?v=20260615a" defer></script>
+    <script src="${configHref}"></script>
+    <script src="${appHref}" defer></script>
 </body>
 </html>
 `;
 
 fs.writeFileSync(path.join(root, 'index.production.html'), html, 'utf8');
-console.log('built index.production.html', html.length);
+console.log('built index.production.html', html.length, 'cache:', cacheBust);

@@ -66,9 +66,9 @@ if (fs.existsSync(path.join(root, 'decrypt.html'))) {
 
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const app = fs.readFileSync(path.join(root, 'assets', 'app.js'), 'utf8');
-const verMatch = app.match(/PHARE_VERSION = '([^']+)'/);
-if (!verMatch || verMatch[1] !== pkg.version) {
-    errors.push(`Version drift: package.json ${pkg.version} vs assets/app.js ${verMatch?.[1] || 'missing'}`);
+// Support esbuild-minified app.js (const name may be mangled; version string remains)
+if (!app.includes(pkg.version)) {
+    errors.push(`Version drift: package.json ${pkg.version} not found in assets/app.js`);
 }
 if (app.includes('workerBlobUrl')) errors.push('assets/app.js must not reference workerBlobUrl');
 if (app.includes('window.PhareRegistry')) errors.push('assets/app.js must not expose window.PhareRegistry');

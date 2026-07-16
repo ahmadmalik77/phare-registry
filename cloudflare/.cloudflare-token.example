@@ -1,0 +1,4 @@
+# Rename this file to .cloudflare-token (same folder)
+# Paste your Cloudflare API token on ONE line only — no quotes, no spaces.
+# Create token at: https://dash.cloudflare.com/profile/api-tokens
+# Permissions needed: Account / Workers Scripts Edit, Account / Workers KV Storage Edit

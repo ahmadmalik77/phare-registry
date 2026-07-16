@@ -19,9 +19,12 @@ const index = read('index.html');
 const app = read('assets/app.js');
 const headers = read('deploy/_headers');
 
-const verMatch = app.match(/PHARE_VERSION = '([^']+)'/);
-if (!verMatch || verMatch[1] !== pkg.version) {
-    errors.push(`Version drift: package.json ${pkg.version} vs app.js ${verMatch?.[1] || 'missing'}`);
+// Support readable source and esbuild-minified app.js
+const verMatch =
+    app.match(/PHARE_VERSION\s*=\s*['"]([^'"]+)['"]/) ||
+    app.match(/['"](2026\.06-production\.\d+)['"]/);
+if (!app.includes(pkg.version)) {
+    errors.push(`Version drift: package.json ${pkg.version} not found in app.js (got ${verMatch?.[1] || 'none'})`);
 }
 
 const cacheMatch = index.match(/\?v=([a-z0-9]+)/i);
