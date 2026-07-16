@@ -70,6 +70,17 @@ const app = fs.readFileSync(path.join(root, 'assets', 'app.js'), 'utf8');
 if (!app.includes(pkg.version)) {
     errors.push(`Version drift: package.json ${pkg.version} not found in assets/app.js`);
 }
+if (!app.includes('PHARE_CONFIG')) {
+    errors.push('assets/app.js missing PHARE_CONFIG load path (loadConfig was stripped)');
+}
+// Readable source (if present) must declare CONFIG for transmit
+const appRawPath = path.join(root, 'assets', 'app.raw.js');
+if (fs.existsSync(appRawPath)) {
+    const raw = fs.readFileSync(appRawPath, 'utf8');
+    if (!raw.includes('function loadConfig') || !raw.includes('const CONFIG = loadConfig()')) {
+        errors.push('assets/app.raw.js missing loadConfig/CONFIG — transmit will throw ReferenceError');
+    }
+}
 if (app.includes('workerBlobUrl')) errors.push('assets/app.js must not reference workerBlobUrl');
 if (app.includes('window.PhareRegistry')) errors.push('assets/app.js must not expose window.PhareRegistry');
 if (app.match(/crypto:\s*Object\.freeze/)) errors.push('assets/app.js must not expose crypto on public API');

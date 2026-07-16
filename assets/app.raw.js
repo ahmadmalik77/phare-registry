@@ -1,8 +1,36 @@
 (function () {
     'use strict';
 
+    function loadConfig() {
+        const raw = window.PHARE_CONFIG;
+        if (!raw || typeof raw !== 'object') {
+            throw new Error('Missing assets/config.js — copy config.example.js and set your Worker URLs before deploy.');
+        }
+        const required = ['API_URL', 'PUBKEY_URL'];
+        for (const key of required) {
+            if (!raw[key] || String(raw[key]).includes('YOUR_SUBDOMAIN')) {
+                throw new Error('Invalid PHARE_CONFIG.' + key + ' — run npm run setup or edit assets/config.js');
+            }
+        }
+        return Object.freeze({
+            API_URL: String(raw.API_URL),
+            PUBKEY_URL: String(raw.PUBKEY_URL),
+            REGISTRY_EMAIL: String(raw.REGISTRY_EMAIL || 'registry@phare.lighthouse'),
+            PUBKEY_FINGERPRINT: raw.PUBKEY_FINGERPRINT ? String(raw.PUBKEY_FINGERPRINT) : null,
+            INVITE_TOKEN: raw.INVITE_TOKEN ? String(raw.INVITE_TOKEN) : null
+        });
+    }
 
-    const PHARE_VERSION = '2026.06-production.19';
+    const CONFIG = loadConfig();
+
+    (function captureInviteFromUrl() {
+        try {
+            const token = new URLSearchParams(location.search).get('invite');
+            if (token) sessionStorage.setItem('phare_invite_token', token);
+        } catch (_) {}
+    })();
+
+    const PHARE_VERSION = '2026.06-production.20';
 
     /*
      * PRODUCTION HARDENING (GitHub Pages host + Cloudflare Worker API):
