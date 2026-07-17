@@ -30,7 +30,7 @@
         } catch (_) {}
     })();
 
-    const PHARE_VERSION = '2026.06-production.23';
+    const PHARE_VERSION = '2026.06-production.24';
 
     /*
      * PRODUCTION HARDENING (GitHub Pages host + Cloudflare Worker API):
@@ -1230,13 +1230,14 @@
                 DraftManager.clear();
                 setSuccessActionsEnabled(true, { hideTransmit: hasTransmitted });
                 lastIntakeData = null;
-                setTimeout(() => {
-                    const successPanel = el('panel-success');
-                    if (successPanel) {
-                        successPanel.setAttribute('tabindex', '-1');
-                        successPanel.focus({ preventScroll: true });
-                    }
-                }, 700);
+                // Do not focus the whole success panel — browsers draw a white/blue
+                // focus box around the block and it can make type look different.
+                // aria-live on the panel announces the result for screen readers.
+                const successPanel = el('panel-success');
+                if (successPanel) {
+                    successPanel.setAttribute('aria-live', 'polite');
+                    successPanel.removeAttribute('tabindex');
+                }
             } catch (err) {
                 console.error('[Phare transmit]', err);
                 lastEncryptedPayload = null;

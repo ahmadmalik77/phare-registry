@@ -635,10 +635,11 @@
 
         #panel-success { position: relative; overflow: visible; }
 
-        /* Programmatic focus after transmit (a11y) — never show system blue/white focus box */
+        /* Guard if anything focuses the panel — never show system white/blue focus chrome */
         #panel-success:focus,
         #panel-success:focus-visible {
-            outline: none;
+            outline: none !important;
+            box-shadow: none !important;
         }
 
         .success-beacon {
