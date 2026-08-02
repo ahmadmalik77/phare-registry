@@ -3,6 +3,9 @@ main = "worker.js"
 compatibility_date = "2025-06-01"
 account_id = "0b4d6a143495e611bd252b8eb7287afb"
 
+[vars]
+ALLOWED_ORIGINS = "https://ahmadmalik77.github.io,https://phare-registry.pages.dev"
+
 # Create namespace: wrangler kv namespace create PHARE_KV
 # Then paste the id below:
 [[kv_namespaces]]
