@@ -11,8 +11,7 @@
  * Deploy: cd cloudflare && wrangler deploy
  */
 
-// Private UHNWI intake — allow room for retries/tests. Only successful stores count (see below).
-const RATE_LIMIT_MAX = 100;
+const RATE_LIMIT_MAX = 10;
 const RATE_LIMIT_WINDOW_SEC = 3600;
 const INTAKE_TTL_SEC = 14400;
 const MAX_BODY_BYTES = 98304; // 96 KiB
@@ -33,7 +32,7 @@ export default {
 
         try {
             if (url.pathname === '/api/intake/pubkey' && request.method === 'GET') {
-                return await handlePubkey(env, cors);
+                return await handlePubkey(request, env, cors);
             }
 
             if (url.pathname === '/api/intake' && request.method === 'POST') {
@@ -51,7 +50,16 @@ export default {
     }
 };
 
-async function handlePubkey(env, cors) {
+async function handlePubkey(request, env, cors) {
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    try {
+        const ipHash = await hashIp(ip, env);
+        if (await checkAndIncrementTotalRateLimit(ipHash, env)) {
+            return jsonResponse({ error: 'Rate limit exceeded' }, 429, securityHeaders(cors));
+        }
+    } catch (_) {
+        // Skip rate limit check if secret salt is unset during development/testing
+    }
     const publicKey = await getRegistryPublicJwk(env);
     return jsonResponse({ v: PROTOCOL_VERSION, publicKey }, 200, {
         ...securityHeaders(cors),
@@ -64,19 +72,26 @@ async function handleIntake(request, env, cors) {
         return jsonResponse({ error: 'Origin not allowed' }, 403, securityHeaders(cors));
     }
 
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    let ipHash = 'unknown';
+    try {
+        ipHash = await hashIp(ip, env);
+        // Enforce total request ceiling before checking invite tokens to stop brute force
+        if (await checkAndIncrementTotalRateLimit(ipHash, env)) {
+            return jsonResponse({ error: 'Rate limit exceeded' }, 429, securityHeaders(cors));
+        }
+        if (await isOverRateLimit(ipHash, env)) {
+            return jsonResponse({ error: 'Rate limit exceeded' }, 429, securityHeaders(cors));
+        }
+    } catch (_) {
+        // Continue if IP hash salt is unset during local verification
+    }
+
     if (env.INVITE_TOKEN) {
         const provided = request.headers.get('X-Phare-Invite') || '';
         if (!provided || !timingSafeEqual(provided, env.INVITE_TOKEN)) {
             return jsonResponse({ error: 'Invitation required' }, 403, securityHeaders(cors));
         }
-    }
-
-    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
-    const ipHash = await hashIp(ip, env);
-
-    // Peek only — do not burn quota on failed validation / client retries
-    if (await isOverRateLimit(ipHash, env)) {
-        return jsonResponse({ error: 'Rate limit exceeded' }, 429, securityHeaders(cors));
     }
 
     const contentLength = parseInt(request.headers.get('Content-Length') || '0', 10);
@@ -160,6 +175,17 @@ async function recordSuccessfulIntake(ipHash, env) {
     }
     data.count = (data.count || 0) + 1;
     await env.PHARE_KV.put(key, JSON.stringify(data), { expirationTtl: RATE_LIMIT_WINDOW_SEC });
+}
+
+/** Total attempts cap per window (200 requests/hr) to block brute-force and DDoS flooding. */
+async function checkAndIncrementTotalRateLimit(ipHash, env) {
+    if (!env.PHARE_KV) return false;
+    const key = `total:${ipHash}`;
+    const raw = await env.PHARE_KV.get(key);
+    const count = raw ? parseInt(raw, 10) : 0;
+    if (count >= 200) return true;
+    await env.PHARE_KV.put(key, String(count + 1), { expirationTtl: RATE_LIMIT_WINDOW_SEC });
+    return false;
 }
 
 async function hashIp(ip, env) {

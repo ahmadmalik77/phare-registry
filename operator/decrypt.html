@@ -6,9 +6,14 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="color-scheme" content="dark">
     <title>Phare — Operator Decrypt Tool</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&family=Jost:wght@100;200;300;400&display=swap" rel="stylesheet">
+    <style>
+        @font-face{font-family:'Playfair Display';font-style:italic;font-weight:400;font-display:swap;src:url(../assets/fonts/playfair-display-latin-400-italic.woff2) format("woff2")}
+        @font-face{font-family:'Cormorant Garamond';font-style:normal;font-weight:300;font-display:swap;src:url(../assets/fonts/cormorant-garamond-latin-300-normal.woff2) format("woff2")}
+        @font-face{font-family:'Cormorant Garamond';font-style:italic;font-weight:300;font-display:swap;src:url(../assets/fonts/cormorant-garamond-latin-300-italic.woff2) format("woff2")}
+        @font-face{font-family:'Jost';font-style:normal;font-weight:200;font-display:swap;src:url(../assets/fonts/jost-latin-200-normal.woff2) format("woff2")}
+        @font-face{font-family:'Jost';font-style:normal;font-weight:300;font-display:swap;src:url(../assets/fonts/jost-latin-300-normal.woff2) format("woff2")}
+        @font-face{font-family:'Jost';font-style:normal;font-weight:400;font-display:swap;src:url(../assets/fonts/jost-latin-400-normal.woff2) format("woff2")}
+    </style>
     <style>
         :root {
             color-scheme: dark;
@@ -286,9 +291,7 @@
                     const decrypted = await decryptOne(privateJwkForTool, simulatedEncrypted);
 
                     // Display nice results
-                    const html = [
-                        '<span class="success">SAMPLE ROUNDTRIP SUCCESSFUL</span>',
-                        '',
+                    const textDetails = [
                         '=== PRIVATE JWK (for testing only — never use in real deploys) ===',
                         JSON.stringify(privateJwk, null, 2),
                         '',
@@ -299,7 +302,12 @@
                         JSON.stringify(decrypted, null, 2)
                     ].join('\n');
 
-                    out.innerHTML = html.replace(/\n/g, '<br>');
+                    out.textContent = '';
+                    const span = document.createElement('span');
+                    span.className = 'success';
+                    span.textContent = 'SAMPLE ROUNDTRIP SUCCESSFUL';
+                    out.appendChild(span);
+                    out.appendChild(document.createTextNode('\n\n' + textDetails));
                     out.classList.add('success');
 
                     // Also populate the inputs so user can immediately re-decrypt the sample
@@ -337,26 +345,48 @@
                     lastBatchResults = results;
 
                     if (results.length === 1 && results[0].success) {
-                        out.innerHTML = '<span class="success">DECRYPTION SUCCESSFUL</span>\n\n' + JSON.stringify(results[0].plaintext, null, 2);
+                        out.textContent = '';
+                        const badge = document.createElement('span');
+                        badge.className = 'success';
+                        badge.textContent = 'DECRYPTION SUCCESSFUL';
+                        out.appendChild(badge);
+                        out.appendChild(document.createTextNode('\n\n' + JSON.stringify(results[0].plaintext, null, 2)));
                         out.classList.add('success');
                     } else {
                         // Multi or mixed results
                         out.style.display = 'none';
-                        let html = '<strong>Batch Results (' + results.length + ')</strong><br><br>';
+                        batch.textContent = '';
+                        const header = document.createElement('strong');
+                        header.textContent = 'Batch Results (' + results.length + ')';
+                        batch.appendChild(header);
+                        batch.appendChild(document.createElement('br'));
+                        batch.appendChild(document.createElement('br'));
                         results.forEach((r, idx) => {
+                            const div = document.createElement('div');
                             if (r.success) {
-                                html += `<div style="margin-bottom:1rem;border-left:3px solid var(--gold);padding-left:0.5rem;">` +
-                                    `<strong>#${idx} — SUCCESS</strong><br>` +
-                                    `<pre style="white-space:pre-wrap;">${JSON.stringify(r.plaintext, null, 2)}</pre>` +
-                                    `<button class="btn" data-copy-idx="${idx}">Copy plaintext</button>` +
-                                    `</div>`;
+                                div.style.marginBottom = '1rem';
+                                div.style.borderLeft = '3px solid var(--gold)';
+                                div.style.paddingLeft = '0.5rem';
+                                const title = document.createElement('strong');
+                                title.textContent = `#${idx} — SUCCESS`;
+                                div.appendChild(title);
+                                div.appendChild(document.createElement('br'));
+                                const pre = document.createElement('pre');
+                                pre.style.whiteSpace = 'pre-wrap';
+                                pre.textContent = JSON.stringify(r.plaintext, null, 2);
+                                div.appendChild(pre);
+                                const btn = document.createElement('button');
+                                btn.className = 'btn';
+                                btn.setAttribute('data-copy-idx', idx);
+                                btn.textContent = 'Copy plaintext';
+                                div.appendChild(btn);
                             } else {
-                                html += `<div style="margin-bottom:1rem;color:var(--error);">` +
-                                    `#${idx} — FAILED: ${r.error}` +
-                                    `</div>`;
+                                div.style.marginBottom = '1rem';
+                                div.style.color = 'var(--error)';
+                                div.textContent = `#${idx} — FAILED: ${r.error}`;
                             }
+                            batch.appendChild(div);
                         });
-                        batch.innerHTML = html;
 
                         // Show export bar for batch
                         if (results.some(r => r.success)) {

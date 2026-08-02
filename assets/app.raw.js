@@ -26,7 +26,10 @@
     (function captureInviteFromUrl() {
         try {
             const token = new URLSearchParams(location.search).get('invite');
-            if (token) sessionStorage.setItem('phare_invite_token', token);
+            if (token) {
+                sessionStorage.setItem('phare_invite_token', token);
+                history.replaceState(null, '', location.pathname);
+            }
         } catch (_) {}
     })();
 

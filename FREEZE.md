@@ -5,6 +5,15 @@
 **Git:** `fee0733` · tag `v24-production-freeze`  
 **Version:** `2026.06-production.24`
 
+## ⛔ Owner hard rule (all AIs / agents)
+
+**No autonomous changes.** Grok, Antigravity, Hermes, BMAD, scripts, or any other agent may:
+
+- ✅ Read, audit, score, and **report** problems to the Owner  
+- ❌ **Not** edit, update, delete, refactor, commit, push, or deploy this webpage/registry **without clear explicit Owner permission**
+
+“Critical bug” still requires the Owner to authorize the fix in chat before files change. Default: **hands off the site.**
+
 ## Live
 
 | Piece | URL / value |
