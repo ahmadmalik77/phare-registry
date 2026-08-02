@@ -19,6 +19,8 @@
     <link rel="preload" href="assets/fonts/playfair-display-latin-400-italic.woff2" as="font" type="font/woff2" crossorigin>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Frame-buster to defuse clickjacking iframes on GitHub Pages -->
+    <script>if(window.top!==window.self){window.top.location.replace(window.self.location);}</script>
     <link rel="stylesheet" href="assets/styles-24.css">
 </head>
 <body>
